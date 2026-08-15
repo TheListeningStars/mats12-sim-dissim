@@ -1,0 +1,44 @@
+{
+  "timestamp": "2026-08-15T05:21:08",
+  "args": {
+    "model": "qwen3.5-9b",
+    "dry_run": false,
+    "synthetic": false,
+    "headline_only": false,
+    "limit": null,
+    "site": "response",
+    "label_source": "behavior"
+  },
+  "key": "qwen3.5-9b",
+  "seed": 0,
+  "label_source": "behavior",
+  "site": "response",
+  "n_per_cell": 100,
+  "truthfit_pairs_per_topic": 10,
+  "layer_fractions": [
+    0.6,
+    0.7,
+    0.8
+  ],
+  "load_in_4bit": false,
+  "dtype": "bfloat16",
+  "max_new_tokens": 32,
+  "model_hf_id": "Qwen/Qwen3.5-9B",
+  "manifest_rows": 1941,
+  "manifest_cells": 30,
+  "n_statements": 394,
+  "probe_C": 1.0,
+  "min_train_per_class": 3,
+  "min_eval_per_class": 2,
+  "n_perm": 5000,
+  "git_sha": "d83f8cf",
+  "versions": {
+    "torch": "2.8.0+cu128",
+    "transformers": "5.15.0",
+    "numpy": "2.1.2",
+    "pandas": "3.0.5",
+    "sklearn": "1.9.0",
+    "scipy": "1.18.0",
+    "statsmodels": "0.14.6"
+  }
+}

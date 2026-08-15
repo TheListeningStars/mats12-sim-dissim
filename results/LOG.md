@@ -304,3 +304,22 @@ Nothing from that section gets quoted in the write-up until the new run reproduc
 
 Manifest after these changes: **1,941 rows / 30 cells / 394 statements**, per-cell eval N
 16–36 (mean 30). Still to do before reporting: the run itself.
+- 2026-08-15 05:18 [qwen3.5-9b] cached activations: 400/1941 rows x layers [19, 22, 26]
+- 2026-08-15 05:54 [qwen3.5-9b] cached activations: 1941/1941 rows x layers [19, 22, 26]
+- 2026-08-15 05:54 [qwen3.5-9b] d_truth: layer 19, held-out truth AUROC 0.954; validity FAIL {'lies_high': True, 'truths_low': True, 'preference_belief_zero': False, 'honest_low': True}; parse rate 1.000
+- 2026-08-15 05:54 [qwen3.5-9b] instrument agreement (d_truth vs independent logit-margin belief): sign agreement 0.858 over 274 statements; accuracy vs ground truth — d_truth 0.850 / margin 0.956; label disagreement 0.166; by |t_hat|: {"<0.3": {"n": 53, "sign_agreement": 0.5849056603773585, "t_hat_vs_truth": 0.6226415094339622}, "0.3-0.6": {"n": 70, "sign_agreement": 0.7571428571428571, "t_hat_vs_truth": 0.7428571428571429}, ">0.6": {"n": 151, "sign_agreement": 1.0, "t_hat_vs_truth": 0.9801324503311258}}
+- 2026-08-15 05:54 [qwen3.5-9b] compliance by cell group:
+```
+                                      n  parse_rate  compliance  lie_rate  lie_rate_vs_belief
+mode          sim_subtype                                                                    
+dissimulation                       548         1.0       0.777     0.777               0.785
+honest                              548         1.0       0.943     0.057               0.016
+simulation    counterfactual_world  137         1.0       0.993     0.993               0.942
+              fictional_frame       274         1.0       0.956     0.303               0.259
+              persona               274         1.0       0.938     0.062               0.040
+```
+- 2026-08-15 05:54 [qwen3.5-9b] !! DEGENERATE cells (one verdict for ~all rows): ['simulation|counterfactual_world|everyday|plain', 'simulation|counterfactual_world|geography|plain', 'simulation|counterfactual_world|history|plain']
+- 2026-08-15 05:54 [qwen3.5-9b] t_hat by difficulty: {"easy": {"n_statements": 168, "mean_abs_t_hat": 0.6883383393287659, "frac_below_0.3": 0.10714285714285714, "p10": 0.2941491901874542}, "hard": {"n_statements": 106, "mean_abs_t_hat": 0.45612040162086487, "frac_below_0.3": 0.330188679245283, "p10": 0.1069326251745224}}
+- 2026-08-15 05:54 [qwen3.5-9b] transfer matrix (logreg, layer 19, labels=behavior): 16 cells (5 skipped), diag AUROC 0.979, off-diag 0.974
+- 2026-08-15 05:54 [qwen3.5-9b] H1 horse race (labels=behavior): R² scenario 0.200 | c-only 0.018 | both 0.290; ΔR² 0.090 (perm p=0.136, naive F p=4.3e-06) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.979, within-class OOD 0.983, style 0.978, behavioral-text 0.878, length-only 0.595, random 0.554
+- 2026-08-15 05:54 [qwen3.5-9b] H2 monotonicity: Spearman ρ=0.57 (p=0.021); H3 asymmetry high→low 0.973 vs low→high 0.975
