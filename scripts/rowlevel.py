@@ -156,8 +156,12 @@ def run(key: str, dry_run: bool, site: str) -> None:
 
     out = {"site": site, "layer": layer, "label_agreement_by_stratum": noise,
            "stratified_auroc": results, "noise_injection_control": inject}
-    (rdir / "rowlevel.json").write_text(json.dumps(out, indent=2))
-    pd.DataFrame(rows).to_csv(rdir / "rowlevel.csv", index=False)
+    # site goes in the filename: the response-site and prompt-site answers are different
+    # measurements of different things, and one silently overwriting the other would be
+    # the exact class of mistake this project keeps finding.
+    sfx = "" if site == "response" else f"_{site}"
+    (rdir / f"rowlevel{sfx}.json").write_text(json.dumps(out, indent=2))
+    pd.DataFrame(rows).to_csv(rdir / f"rowlevel{sfx}.csv", index=False)
 
     print(f"=== row-level detectability ({key}, site={site}, layer={layer}) ===\n")
     for label_name, per in results.items():
@@ -179,7 +183,7 @@ def run(key: str, dry_run: bool, site: str) -> None:
         print(f"   actually observed in <0.3 stratum     "
               f"{inject['observed_low_stratum_auroc']:.3f}")
         print("   If the middle line matches the last, label noise explains the effect.")
-    print(f"\nwrote {rdir / 'rowlevel.json'}")
+    print(f"\nwrote {rdir / ('rowlevel' + sfx + '.json')}")
 
 
 if __name__ == "__main__":
