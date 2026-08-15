@@ -113,6 +113,7 @@ def main() -> None:
         rows.append(dict(cell=r.cell, statement=r.statement, text=text,
                          said=behavior.parse_verdict(text),
                          think=bool(THINK_RE.search(text)),
+                         refused=behavior.is_refusal(text),
                          vec=vecs[layers[0]], pvec=pvecs[layers[0]],
                          margin=margin, truth_value=r.truth_value, mode=r.mode))
     sec_per_row = (time.time() - t_gen) / len(rows)
@@ -145,7 +146,19 @@ def main() -> None:
          f"{n_think}/{len(rows)} responses contain a <think> block"
          + ("" if n_think == 0 else
             "  -> pass enable_thinking=False to apply_chat_template"))
-    gate(parse_rate >= 0.9, "verdict parses", f"parse rate {parse_rate:.2f}")
+    # Gate on the parser, not on the model's willingness. A refusal is a real response
+    # that happens to contain no verdict; blocking on it would have stopped the phi-4
+    # replication over the most interesting thing phi-4 does.
+    n_ref = sum(r["refused"] for r in rows)
+    unparse_not_refusal = [r for r in rows if r["said"] == 0 and not r["refused"]]
+    eff = 1.0 - len(unparse_not_refusal) / max(len(rows), 1)
+    gate(eff >= 0.9, "verdict parses",
+         f"parse rate {parse_rate:.2f}; {n_ref} refusals excluded -> "
+         f"parser accounts for {eff:.2f}")
+    if n_ref:
+        print(f"  (info) {n_ref}/{len(rows)} responses are REFUSALS — the model declined "
+              "to assert. That is a result about this model, not a parsing problem; "
+              "compliance.csv will carry the rate per cell.")
     gate(np.isfinite(A).all(), "activations finite",
          f"shape {A.shape}, {int((~np.isfinite(A)).sum())} non-finite")
     gate(float(norms.std() / max(norms.mean(), 1e-9)) > 1e-3, "activations vary",
