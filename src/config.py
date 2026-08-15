@@ -47,20 +47,45 @@ def log(msg: str, key: str = "") -> None:
 
 
 # model key -> HF id. Deliberately modern models (see PLAN: no GPT-2/Pythia/Gemma-2).
+#
+# Qwen3.5 is the primary because it is the current recommended default dense family.
+# Two things about it drive code elsewhere, both verified from its model card/config:
+#   - it REASONS BY DEFAULT, emitting <think>...</think> before the answer, and does not
+#     support the Qwen3 /think /nothink soft switch. The only lever is
+#     apply_chat_template(enable_thinking=False) — see activations.capture_residual.
+#     With thinking on, MAX_NEW_TOKENS=32 truncates mid-trace and no verdict is ever
+#     emitted, so every label would silently fall back to the assumed value.
+#   - it is multimodal (Qwen3_5ForConditionalGeneration) with the text stack's depth
+#     under config.text_config — see activations.resolve_layers.
 MODELS = {
-    "qwen2.5-7b-instruct": "Qwen/Qwen2.5-7B-Instruct",
+    "qwen3.5-9b": "Qwen/Qwen3.5-9B",                               # primary (Apache-2.0, ungated)
+    "qwen3.5-4b": "Qwen/Qwen3.5-4B",                               # fast smoke-test sibling
+    "gemma-3-12b-it": "google/gemma-3-12b-it",                     # cross-family replication
+    "qwen2.5-7b-instruct": "Qwen/Qwen2.5-7B-Instruct",             # earlier runs / comparison
     "llama-3.1-8b-instruct": "meta-llama/Llama-3.1-8B-Instruct",   # gated: huggingface-cli login
-    "gemma-3-12b-it": "google/gemma-3-12b-it",                     # optional
 }
-PRIMARY_MODEL = "qwen2.5-7b-instruct"
+PRIMARY_MODEL = "qwen3.5-9b"
+REPLICATION_MODEL = "gemma-3-12b-it"   # different family: same-family replication is weak evidence
+
+# Models that emit a reasoning trace unless explicitly told not to. capture_residual
+# passes enable_thinking=False for these; preflight.py gates on no <think> surviving.
+THINKING_MODELS = ("qwen3.5-9b", "qwen3.5-4b")
 
 # residual-stream layers to sweep, as fractions of depth (resolved per-model in activations.py)
 LAYER_FRACTIONS = (0.6, 0.7, 0.8)
 
-LOAD_IN_4BIT = True
+# bf16, not 4-bit. A 9B fits a 48GB card in bf16 with room to spare, and quantization
+# perturbs exactly the thing this project measures — residual-stream geometry. There is
+# no compute reason to carry it on rented hardware. DTYPE participates in cache
+# invalidation (activations._cache_identity): flipping precision changes activations
+# without changing any prompt, so it must not silently reuse an existing cache.
+LOAD_IN_4BIT = False
+DTYPE = "bfloat16"
 MAX_NEW_TOKENS = 32
-CHECKPOINT_EVERY_N_ROWS = 20    # activation-cache flush interval — protects a rented-GPU
-                                # run against spot eviction / dropped SSH / any crash
+CHECKPOINT_EVERY_N_ROWS = 100   # activation-cache flush interval — protects a rented-GPU
+                                # run against spot eviction / dropped SSH / any crash.
+                                # Each flush rewrites all layer .npz files, so at 20 this
+                                # cost ~110 full rewrites over a 2.2k-row run.
 
 # dataset design -----------------------------------------------------------
 MODES = ("honest", "dissimulation", "simulation")

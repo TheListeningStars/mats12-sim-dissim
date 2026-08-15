@@ -327,9 +327,19 @@ def load_base_statements(dry_run: bool = False) -> pd.DataFrame:
     rng = np.random.default_rng(config.SEED)
     rows = []
     n_fit = 2 if dry_run else config.TRUTHFIT_PAIRS_PER_TOPIC
+    # Splits are assigned per PAIR, which keeps a fact's TRUE and FALSE forms together —
+    # but only within a pair. Seven statements appear byte-identical in both the easy and
+    # the hard bank under different pair_ids, so the guarantee silently failed across
+    # them: two straddled train/eval (identical prompts, greedy decoding => identical
+    # activations, i.e. exact leakage) and two put a statement used to FIT d_truth into
+    # the probe training set. Drop the later duplicate; easy wins because d_truth is fit
+    # on easy pairs and the easy bank is the calibration reference.
+    seen: set[str] = set()
     for topic, by_diff in _topic_pairs().items():
         for difficulty in config.DIFFICULTIES:
-            pairs = by_diff.get(difficulty, [])
+            pairs = [p for p in by_diff.get(difficulty, [])
+                     if not (p[0] in seen or p[1] in seen)
+                     and not (seen.add(p[0]) or seen.add(p[1]))]
             if dry_run:
                 pairs = pairs[:6]
             if not pairs:
@@ -348,7 +358,12 @@ def load_base_statements(dry_run: bool = False) -> pd.DataFrame:
                     rows.append(dict(statement_id=f"{pid}-{suffix}", pair_id=pid,
                                      statement=stmt, truth_value=tv, topic=topic,
                                      difficulty=difficulty, split=split))
-    return pd.DataFrame(rows)
+    out = pd.DataFrame(rows)
+    # the invariant the dedupe above exists to enforce — assert it rather than trust it
+    assert out.statement.is_unique, (
+        "duplicate statement text across pairs: "
+        f"{out.statement[out.statement.duplicated()].tolist()[:5]}")
+    return out
 
 
 def load_preference_statements(dry_run: bool = False) -> pd.DataFrame:
@@ -470,12 +485,22 @@ def _asserted_true(mode: str, sim_subtype: str, truth_value: int, differ: bool) 
 
 def _rows_for_cell(stmts: pd.DataFrame, mode: str, subtype: str, style: str,
                    rng: np.random.Generator, premises: dict[str, str] | None = None) -> list[dict]:
+    # The in-world premise is the FALSE member of the statement's own pair. For a
+    # FALSE-member row that makes the prompt quote the statement verbatim as the world's
+    # fact and then ask whether that same string is true — a string-identity task, not
+    # counterfactual reasoning. It scored as maximally truth-conflicting (c = |t_hat|)
+    # at 98% compliance, which is what copying looks like. So counterfactual cells keep
+    # only TRUE members, where the premise genuinely contradicts the statement.
+    if subtype == "counterfactual_world":
+        stmts = stmts[stmts.truth_value == 1]
     stmts = stmts.head(config.N_PER_CELL)
     cell = f"{mode}|{subtype or '-'}|{stmts.topic.iloc[0]}|{style}"
     premises = premises or {}
     out = []
     for r in stmts.itertuples():
-        differ = bool(rng.integers(2)) if subtype == "fictional_frame" else False
+        # same reason: only a TRUE member can be given a contradicting in-world premise
+        differ = (subtype == "fictional_frame" and r.truth_value == 1
+                  and bool(rng.integers(2)))
         if mode == "honest":
             prompt = render_honest(r.statement, style)
         elif mode == "dissimulation":

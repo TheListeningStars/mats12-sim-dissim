@@ -15,6 +15,11 @@ from sklearn.preprocessing import StandardScaler
 
 from . import config
 
+# L2 strength for the probe. Recorded in run_meta.json rather than buried here:
+# features are ~4k-d and training pools are ~40-90 rows, so this is a load-bearing
+# hyperparameter, not a default.
+LOGREG_C = 1.0
+
 
 @dataclass
 class Probe:
@@ -32,7 +37,7 @@ def train_logreg(acts: np.ndarray, labels: np.ndarray, layer: int) -> Probe:
     """L2 logistic regression on standardized features, fixed C, seeded.
     The scaler is folded into (w, b) so scoring needs no fit-time state."""
     scaler = StandardScaler().fit(acts)
-    clf = LogisticRegression(C=1.0, max_iter=2000, random_state=config.SEED)
+    clf = LogisticRegression(C=LOGREG_C, max_iter=2000, random_state=config.SEED)
     clf.fit(scaler.transform(acts), labels)
     coef = clf.coef_[0]
     w = coef / scaler.scale_

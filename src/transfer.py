@@ -128,14 +128,22 @@ def transfer_matrix(df, ids, acts, cells, layer, kind="logreg", label_source="be
 
 
 def run(key: str, dry_run: bool = False, kind: str = "logreg",
-        label_source: str = "behavior") -> None:
+        label_source: str = "behavior", site: str = "response") -> None:
     rdir = config.results_dir(key)
+    # A crashed earlier stage used to leave these in place, and baselines.run would then
+    # happily analyse the PREVIOUS session's transfer matrix under this run's key. Clear
+    # them up front so a failure downstream is visibly a failure, not a stale number.
+    for stale in ("transfer_matrix.csv", "transfer_long.csv", "cells.csv",
+                  "skipped_cells.csv"):
+        (rdir / stale).unlink(missing_ok=True)
+
     df = pd.read_csv(config.manifest_path(dry_run), keep_default_na=False)
     cs = behavior.load_c_scores(rdir / "c_scores.csv")
-    df = df.merge(cs[["id", "c", "actually_lied", "parsed", "complied", "t_hat"]],
-                  on="id", how="inner")
+    keep = [c for c in ("id", "c", "actually_lied", "parsed", "complied", "t_hat",
+                        "b_hat", "b_hat_framed") if c in cs]
+    df = df.merge(cs[keep], on="id", how="inner")
     layer = json.loads((rdir / "truth_axis_meta.json").read_text())["best_layer"]
-    _, layers, _ = load_cache(key)
+    _, layers, _ = load_cache(key, site=site)
     ids, acts = layers[layer]
 
     cells, skipped = build_cells(df, label_source)

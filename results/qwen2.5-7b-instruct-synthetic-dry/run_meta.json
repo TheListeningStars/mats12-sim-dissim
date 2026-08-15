@@ -1,15 +1,18 @@
 {
-  "timestamp": "2026-08-14T19:58:24",
+  "timestamp": "2026-08-14T21:28:23",
   "args": {
     "model": "qwen2.5-7b-instruct",
     "dry_run": true,
     "synthetic": true,
     "headline_only": false,
+    "limit": null,
+    "site": "prompt",
     "label_source": "behavior"
   },
   "key": "qwen2.5-7b-instruct-synthetic-dry",
   "seed": 0,
   "label_source": "behavior",
+  "site": "prompt",
   "n_per_cell": 100,
   "truthfit_pairs_per_topic": 10,
   "layer_fractions": [
@@ -17,7 +20,25 @@
     0.7,
     0.8
   ],
-  "load_in_4bit": true,
+  "load_in_4bit": false,
+  "dtype": "bfloat16",
   "max_new_tokens": 32,
-  "model_hf_id": "Qwen/Qwen2.5-7B-Instruct"
+  "model_hf_id": "Qwen/Qwen2.5-7B-Instruct",
+  "manifest_rows": 552,
+  "manifest_cells": 30,
+  "n_statements": 104,
+  "probe_C": 1.0,
+  "min_train_per_class": 3,
+  "min_eval_per_class": 2,
+  "n_perm": 5000,
+  "git_sha": "f783244",
+  "versions": {
+    "torch": "2.2.1",
+    "transformers": "5.12.0",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "sklearn": "1.9.0",
+    "scipy": "1.17.1",
+    "statsmodels": "0.14.6"
+  }
 }

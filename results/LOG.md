@@ -215,3 +215,92 @@ simulation    counterfactual_world   80         1.0       0.675     0.675       
 - 2026-08-14 19:58 [qwen2.5-7b-instruct-synthetic-dry] H1 horse race (labels=behavior): R² scenario 0.056 | c-only 0.035 | both 0.071; ΔR² 0.015 (perm p=0.248, naive F p=0.2) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.548, within-class OOD 0.506, style 0.618, behavioral-text 0.483, length-only 0.525, random 0.498
 - 2026-08-14 19:58 [qwen2.5-7b-instruct-synthetic-dry] H2 monotonicity: Spearman ρ=0.10 (p=0.693); H3 asymmetry high→low 0.513 vs low→high 0.540
 - 2026-08-14 19:59 [unittest-fake-model-dry] cached activations: 592/592 rows x layers [5, 6, 7]
+
+## 2026-08-14 — pre-run audit + de-circularization (no GPU spent yet)
+
+Two independent Opus agents audited the code and the methodology before the full run.
+They converged on the same three problems, and independently reproduced the same
+variance decomposition, which is why I believe them.
+
+**1. `c` was not a graded axis — it was `|t_hat|` on the rows the model lied on.**
+Verified numerically: `c ≡ |t_hat|` exactly on every positive row and `c ≡ 0` exactly on
+every negative row. And `actually_lied = sign(said)·sign(t_hat) < 0` is the same quantity
+thresholded. So the probe label and the horse-race predictor were one object, both read
+off `d_truth`, and "graded truth-conflict" really meant "the model's confidence in
+whichever statements it happened to lie about".
+
+**2. The v3 "NEW POSITIVE" is quantitatively label noise.** Where `|t_hat| < 0.3`,
+`sign(t_hat)` agrees with the model's own honest verdict 39% of the time and with ground
+truth 50% — chance. Symmetric label noise attenuates AUROC as `p·A + (1−p)(1−A)`; at
+p=0.80 with a true A=0.99 that predicts 0.794 (logged: 0.802), and at p=0.89 it predicts
+0.887 (logged: 0.887). The whole reported gap is accounted for without any claim about
+representations.
+
+**3. The inference was invalid, and by a lot.** Simulated on the real 17-cell design:
+naive nested F has a **74%** type-I error rate, cluster-on-`source_cell` **76%**. The
+pre-registered within-scenario permutation test comes out at **5.0%** — correctly
+calibrated. So `naive_F_p = 0.0058` and `cluster_robust c_target p = 0.019` are artifacts
+of treating 272 cell-pairs as 272 independent observations; the honest number was always
+the permutation p of 0.39. I also ran the cell-level null directly: observed ΔR² 0.0403
+against a null *mean* of 0.0489 — the real assignment of `c` explains less than a random
+reassignment does.
+
+**4. Transfer AUROC is mostly not about transfer.** Variance decomposition over the 272
+off-diagonal pairs: target-cell identity R² = 0.635, source-cell identity R² = 0.074.
+Where the probe was trained explains 7%; what it is tested on explains 64%. Also: topic
+is absent from the null model and accounts for ~70% of the headline ΔR² (0.040 → 0.012
+once topic is in `M0`).
+
+**5. The committed results were stale.** `results/*-dry/c_scores.csv` predates the
+`actually_lied` fix, so the v3 numbers quoted above this entry have no artifacts on disk.
+Nothing from that section gets quoted in the write-up until the new run reproduces it.
+
+### Changes made in response (all pre-caching, so no GPU was wasted)
+
+- **Belief is now measured independently of `d_truth`.** `activations.belief_margin`
+  teacher-forces `VERDICT:` and reads the TRUE-vs-FALSE logit margin — the model's own
+  output distribution, sharing no machinery with the fitted direction. `b_hat` replaces
+  `t_hat` as the basis of both the label and `c`. `t_hat` is retained as an instrument to
+  be *checked* against `b_hat`, which is what makes the validity test meaningful instead
+  of self-confirming. `c_from_t_hat` and `lied_vs_t_hat` are kept alongside so the
+  write-up can quantify the disagreement rather than assert it.
+- **New `instrument_agreement` diagnostic**: sign agreement between `d_truth` and the
+  independent belief, stratified by `|t_hat|` and by difficulty. This is the check that
+  settles whether the row-level gradient is real or label corruption.
+- **Prompt-site residual is now cached** (`--site prompt`). The forward pass already
+  computed it and threw it away. The response mean necessarily contains the verdict token
+  the probe is predicting — which is what the 0.93 text-only baseline was showing — so
+  reading the final prompt token, before the model commits, asks the cleaner question.
+- **Counterfactual cell was half tautology.** The in-world premise was the pair's FALSE
+  member, so FALSE-member rows quoted the statement verbatim as the world's fact and then
+  asked whether that same string was true. 98% compliance was copying. Those cells now
+  keep TRUE members only (137 rows, down from 274); `fictional_frame` only sets `differ`
+  on TRUE members for the same reason.
+- **Seven byte-identical statements** appeared in both the easy and hard banks under
+  different `pair_id`s, so the pair-level split guarantee failed across them — two
+  straddled train/eval (identical prompts, greedy decoding ⇒ identical activations) and
+  two put a `d_truth`-fitting statement into probe training. Deduplicated, with an
+  assertion so it cannot regress.
+- **Cache identity now covers dtype and 4-bit**, which it did not: flipping precision
+  changes every vector without changing a prompt, and would have silently reused
+  quantized activations.
+- **Primary model → `Qwen/Qwen3.5-9B`, bf16, 4-bit off.** Qwen3.5 reasons by default and
+  does not support the `/nothink` soft switch, so `enable_thinking=False` is passed
+  explicitly; it is also multimodal, so layer depth is read from `config.text_config`
+  rather than the top level. Either would have silently ruined the run: with thinking on,
+  `MAX_NEW_TOKENS=32` truncates mid-trace and no verdict is ever emitted.
+- **`--limit N` canary mode + `scripts/preflight.py`**, so a pod can be checked for a few
+  minutes before committing hours. `_priority_order` puts truthfit rows first then
+  round-robins across cells, so a 200-row slice covers all 30 cells rather than one.
+- **`scripts/verify.py`**: re-derives every headline number with code that imports
+  nothing from the analysis modules, and adds the three checks the pipeline never did
+  (cell-level null, variance decomposition, label-noise control). Currently reproduces
+  every pipeline number exactly.
+- Housekeeping: `N_PERM` 500 → 5000, `CHECKPOINT_EVERY_N_ROWS` 20 → 100 (each flush
+  rewrote all layer files), stale transfer artifacts deleted at the top of `transfer.run`
+  so a crashed stage can no longer leave the previous session's numbers for `baselines`
+  to analyse, and `run_meta.json` now records git SHA, library versions, probe `C`, and
+  the cell-size thresholds.
+
+Manifest after these changes: **1,941 rows / 30 cells / 394 statements**, per-cell eval N
+16–36 (mean 30). Still to do before reporting: the run itself.

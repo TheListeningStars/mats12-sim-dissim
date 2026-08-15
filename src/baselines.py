@@ -25,6 +25,11 @@ import pandas as pd
 from . import behavior, config, probes
 from .activations import load_cache
 
+# Permutations for the within-scenario null. This is the ONLY correctly-calibrated
+# test in the horse race (the naive F and the cluster-robust p both assume the 272
+# cell-pairs are independent, which they are not), so it is worth running properly.
+N_PERM = 5000
+
 F_SCEN = "C(scenario_source) + C(scenario_target)"
 F_C = "c_source + c_target + abs_dc"
 
@@ -34,7 +39,7 @@ def _fit(formula: str, df: pd.DataFrame):
     return smf.ols(f"auroc ~ {formula}", data=df).fit()
 
 
-def horse_race(transfer_long: pd.DataFrame, n_perm: int = 500) -> dict:
+def horse_race(transfer_long: pd.DataFrame, n_perm: int = N_PERM) -> dict:
     """Nested model comparison on transfer AUROC (PLAN §3, §8, H1).
         M0: scenario labels only    M1: c only    M2: both
     Returns the stats dict; caller saves results/horse_race.csv."""

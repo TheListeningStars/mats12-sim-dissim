@@ -66,7 +66,8 @@ def annotate(df: pd.DataFrame, texts: pd.DataFrame) -> pd.DataFrame:
     label — see module docstring. `actually_lied` (the belief-based deception label)
     isn't set here: it needs t_hat, which doesn't exist until truth_axis.py runs.
     """
-    out = df.merge(texts[["id", "text"]], on="id", how="left")
+    cols = ["id", "text"] + (["belief_margin"] if "belief_margin" in texts else [])
+    out = df.merge(texts[cols], on="id", how="left")
     out["text"] = out["text"].fillna("")
     out["said"] = out["text"].map(parse_verdict)
     out["parsed"] = out["said"] != 0
