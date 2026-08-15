@@ -301,6 +301,94 @@ def fig_instrument(rdir: Path, out: Path) -> bool:
     return True
 
 
+def fig_cross_model(models: dict, out: Path) -> bool:
+    """The replication picture, on one axis: what held across families and what did not.
+
+    Left panel is the row-level gradient, which replicated everywhere. Right panel is the
+    variance split, which did not -- Olmo inverts it. Putting them side by side is the
+    honest presentation: one result travelled and one did not, and the reader should see
+    both at once rather than only the one that worked.
+    """
+    import json as _json
+    have = {}
+    for k in models:
+        rl, tl = models[k] / "rowlevel.json", models[k] / "transfer_long.csv"
+        if rl.exists() and tl.exists():
+            have[k] = (_json.loads(rl.read_text()), tl)
+    if len(have) < 2:
+        return False
+
+    fig, axes = plt.subplots(1, 2, figsize=(12.4, 4.4))
+    cols = [BLUE, ORANGE, AQUA, "#eda100"]
+    names = ["<0.3", "0.3-0.6", ">0.6"]
+
+    ax = axes[0]
+    for (k, (d, _)), col in zip(have.items(), cols):
+        st = d.get("stratified_auroc", {}).get("groundtruth") or \
+             d.get("stratified_auroc", {}).get("belief", {})
+        xs = [i for i, n in enumerate(names) if n in st]
+        ys = [st[names[i]]["auroc"] for i in xs]
+        if not xs:
+            continue
+        ax.plot(xs, ys, "-o", color=col, linewidth=2, markersize=8, label=k,
+                markeredgecolor=SURFACE, markeredgewidth=1.5, zorder=3)
+        # label at the LEFT end: the three series converge near 0.99 on the right and
+        # the labels would sit on top of each other there, but they are well separated
+        # at the low-confidence end, which is also the end the figure is about
+        ax.annotate(k, (xs[0], ys[0]), textcoords="offset points", xytext=(-8, -3),
+                    color=col, fontsize=9, fontweight="bold", ha="right")
+    ax.set_xticks(range(len(names)))
+    ax.set_xticklabels([f"|belief|\n{n}" for n in names])
+    ax.set_xlim(-1.35, len(names) - 0.75)
+    ax.set_ylabel("deception-probe AUROC")
+    ax.set_xlabel("model's confidence in the proposition")
+    ax.grid(axis="y", color=MUTED, alpha=0.25, linewidth=0.6); ax.set_axisbelow(True)
+    ax.text(0, 1.06, "REPLICATES: harder to detect when unsure", transform=ax.transAxes,
+            color=INK, fontsize=11, fontweight="bold", va="bottom")
+
+    ax = axes[1]
+    labels, tgt, src = [], [], []
+    for k, (_, tl) in have.items():
+        d = behavior.load_transfer_long(tl)
+        off = d[~d.is_diag].dropna(subset=["auroc"])
+        if len(off) < 10:
+            continue
+        y = off.auroc.to_numpy()
+
+        def r2(c):
+            X = pd.get_dummies(off[c].astype(str), drop_first=True).to_numpy(float)
+            X = np.column_stack([np.ones(len(y)), X])
+            b, *_ = np.linalg.lstsq(X, y, rcond=None)
+            r = y - X @ b
+            return float(1 - r @ r / ((y - y.mean()) ** 2).sum())
+        labels.append(k); tgt.append(r2(["target_cell"])); src.append(r2(["source_cell"]))
+    xp = np.arange(len(labels))
+    ax.bar(xp - 0.19, tgt, 0.36, color=BLUE, label="tested on (target)", zorder=3)
+    ax.bar(xp + 0.19, src, 0.36, color=ORANGE, label="trained on (source)", zorder=3)
+    for x, v in zip(xp - 0.19, tgt):
+        ax.annotate(f"{v:.2f}", (x, v), textcoords="offset points", xytext=(0, 3),
+                    ha="center", color=INK, fontsize=9, fontweight="bold")
+    for x, v in zip(xp + 0.19, src):
+        ax.annotate(f"{v:.2f}", (x, v), textcoords="offset points", xytext=(0, 3),
+                    ha="center", color=INK, fontsize=9, fontweight="bold")
+    ax.set_xticks(xp); ax.set_xticklabels(labels, fontsize=9)
+    ax.set_ylabel("R² of transfer AUROC"); ax.set_ylim(0, 0.85)
+    # upper-left: the leftmost model is the one with the two short bars
+    ax.legend(frameon=False, labelcolor=INK2, fontsize=9, loc="upper left")
+    ax.grid(axis="y", color=MUTED, alpha=0.25, linewidth=0.6); ax.set_axisbelow(True)
+    ax.text(0, 1.06, "DOES NOT: Olmo inverts the split", transform=ax.transAxes,
+            color=INK, fontsize=11, fontweight="bold", va="bottom")
+
+    fig.tight_layout(rect=(0, 0, 1, 0.87))
+    fig.text(0.012, 0.975, "What replicated across model families, and what did not",
+             color=INK, fontsize=13, fontweight="bold", va="top")
+    fig.text(0.012, 0.925, "Olmo is also the only model whose probes actually degrade "
+             "out of distribution (off-diagonal 0.87 vs 0.97–1.00)",
+             color=INK2, fontsize=9, va="top")
+    fig.savefig(out, dpi=200); plt.close(fig)
+    return True
+
+
 FIGS = [("rowlevel", fig_rowlevel), ("variance_decomposition", fig_variance),
         ("transfer_heatmap_clean", fig_heatmap), ("lie_rate_by_frame", fig_lierate),
         ("baselines", fig_baselines), ("instrument_agreement", fig_instrument)]
@@ -333,3 +421,10 @@ if __name__ == "__main__":
         sys.exit("no results directories found")
     for k in keys:
         run(k)
+    # one cross-model figure, written to results/ rather than into any single model's dir
+    real = {k: config.results_dir(k) for k in keys
+            if "synthetic" not in k and "-dry" not in k}
+    if len(real) >= 2:
+        outp = config.RESULTS_DIR / "cross_model.png"
+        if fig_cross_model(real, outp):
+            print(f"wrote {outp}")
