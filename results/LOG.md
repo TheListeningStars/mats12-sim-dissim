@@ -360,3 +360,19 @@ the model is not confident about — not yet that uncertainty per se is the medi
 within-class OOD 0.983, style-shift 0.978. Qwen3.5-9B barely degrades across frames, so
 there is again little transfer variance for H1 to explain — the same problem the hard
 fact bank was built to solve on Qwen2.5, returning because the model got better.
+- 2026-08-15 01:42 [qwen2.5-7b-instruct-synthetic-dry] d_truth: layer 12, held-out truth AUROC 0.981; validity PASS {'lies_high': True, 'truths_low': True, 'preference_belief_zero': True, 'honest_low': True}; parse rate 1.000
+- 2026-08-15 01:42 [qwen2.5-7b-instruct-synthetic-dry] instrument agreement (d_truth vs independent logit-margin belief): sign agreement 0.900 over 80 statements; accuracy vs ground truth — d_truth 0.912 / margin 0.988; label disagreement 0.118; by |t_hat|: {"<0.3": {"n": 45, "sign_agreement": 0.8222222222222222, "t_hat_vs_truth": 0.8444444444444444}, "0.3-0.6": {"n": 32, "sign_agreement": 1.0, "t_hat_vs_truth": 1.0}, ">0.6": {"n": 3, "sign_agreement": 1.0, "t_hat_vs_truth": 1.0}}
+- 2026-08-15 01:42 [qwen2.5-7b-instruct-synthetic-dry] compliance by cell group:
+```
+                                      n  parse_rate  compliance  lie_rate  lie_rate_vs_belief
+mode          sim_subtype                                                                    
+dissimulation                       160         1.0       0.544     0.544               0.544
+honest                              160         1.0       0.988     0.012               0.025
+simulation    counterfactual_world   40         1.0       0.650     0.650               0.625
+              fictional_frame        80         1.0       0.725     0.425               0.412
+              persona                80         1.0       0.862     0.138               0.150
+```
+- 2026-08-15 01:42 [qwen2.5-7b-instruct-synthetic-dry] t_hat by difficulty: {"easy": {"n_statements": 32, "mean_abs_t_hat": 0.37193819880485535, "frac_below_0.3": 0.21875, "p10": 0.1831350475549698}, "hard": {"n_statements": 48, "mean_abs_t_hat": 0.20090429484844208, "frac_below_0.3": 0.7916666666666666, "p10": 0.05271197110414505}}
+- 2026-08-15 01:42 [qwen2.5-7b-instruct-synthetic-dry] transfer matrix (logreg, layer 12, labels=behavior): 16 cells (5 skipped), diag AUROC 0.571, off-diag 0.562
+- 2026-08-15 01:43 [qwen2.5-7b-instruct-synthetic-dry] H1 horse race (labels=behavior): R² scenario 0.078 | c-only 0.004 | both 0.083; ΔR² 0.005 (perm p=0.825, naive F p=0.74) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.571, within-class OOD 0.601, style 0.595, behavioral-text 0.508, length-only 0.519, random 0.485
+- 2026-08-15 01:43 [qwen2.5-7b-instruct-synthetic-dry] H2 monotonicity: Spearman ρ=-0.30 (p=0.259); H3 asymmetry high→low 0.575 vs low→high 0.548

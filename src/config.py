@@ -60,12 +60,20 @@ def log(msg: str, key: str = "") -> None:
 MODELS = {
     "qwen3.5-9b": "Qwen/Qwen3.5-9B",                               # primary (Apache-2.0, ungated)
     "qwen3.5-4b": "Qwen/Qwen3.5-4B",                               # fast smoke-test sibling
-    "gemma-3-12b-it": "google/gemma-3-12b-it",                     # cross-family replication
+    # Cross-family replication. Both UNGATED, which matters: gemma-3 and llama-3.1 both
+    # 401 without an accepted licence + token, and a replication you cannot run is not a
+    # replication. Different labs, different pretraining, different tokenizers — which is
+    # the point, since same-family replication mostly re-tests the same training data.
+    "phi-4": "microsoft/phi-4",                                    # MIT, 14.7B, Phi3ForCausalLM
+    "olmo-3-7b-instruct": "allenai/Olmo-3-7B-Instruct",            # Apache-2.0, 7.3B, fully open
     "qwen2.5-7b-instruct": "Qwen/Qwen2.5-7B-Instruct",             # earlier runs / comparison
-    "llama-3.1-8b-instruct": "meta-llama/Llama-3.1-8B-Instruct",   # gated: huggingface-cli login
+    # gated — need `huggingface-cli login` AND licence acceptance on the model page:
+    "gemma-3-12b-it": "google/gemma-3-12b-it",
+    "llama-3.1-8b-instruct": "meta-llama/Llama-3.1-8B-Instruct",
 }
 PRIMARY_MODEL = "qwen3.5-9b"
-REPLICATION_MODEL = "gemma-3-12b-it"   # different family: same-family replication is weak evidence
+REPLICATION_MODELS = ("phi-4", "olmo-3-7b-instruct")
+GATED_MODELS = ("gemma-3-12b-it", "llama-3.1-8b-instruct")
 
 # Models that emit a reasoning trace unless explicitly told not to. capture_residual
 # passes enable_thinking=False for these; preflight.py gates on no <think> surviving.
