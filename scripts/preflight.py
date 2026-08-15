@@ -37,7 +37,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src import activations, behavior, config, data_build  # noqa: E402
 
-N_SAMPLE = 12
+N_SAMPLE = 20
 THINK_RE = re.compile(r"<think>|</think>", re.I)
 
 
@@ -114,7 +114,7 @@ def main() -> None:
                          said=behavior.parse_verdict(text),
                          think=bool(THINK_RE.search(text)),
                          vec=vecs[layers[0]], pvec=pvecs[layers[0]],
-                         margin=margin, truth_value=r.truth_value))
+                         margin=margin, truth_value=r.truth_value, mode=r.mode))
     sec_per_row = (time.time() - t_gen) / len(rows)
 
     # --- raw output, printed in full: read it ---
@@ -161,13 +161,27 @@ def main() -> None:
     # The belief margin is now the basis of the label and of c, so it has to be a real
     # measurement: finite, varying, and pointing the right way on facts the model knows.
     m = np.array([r["margin"] for r in rows])
-    fac = [r for r in rows if r["truth_value"] in (0, 1)]
-    agree = (float(np.mean([(r["margin"] > 0) == (r["truth_value"] == 1) for r in fac]))
-             if fac else float("nan"))
     gate(bool(np.isfinite(m).all()) and float(m.std()) > 1e-6, "belief margin sane",
          f"mean {m.mean():+.2f} sd {m.std():.2f}")
-    gate(not fac or agree >= 0.6, "belief tracks truth",
-         f"sign(margin) matches ground truth on {agree:.2f} of {len(fac)} factual rows")
+
+    # Only HONEST-frame rows may be checked against ground truth. The margin is measured
+    # on each row's own prompt, so inside a counterfactual or lying frame it correctly
+    # follows the frame rather than the world — that is the signal, not a fault. Scoring
+    # framed rows here would fail the gate precisely when the experiment is working.
+    hon = [r for r in rows if r["mode"] == "honest" and r["truth_value"] in (0, 1)]
+    agree = (float(np.mean([(r["margin"] > 0) == (r["truth_value"] == 1) for r in hon]))
+             if hon else float("nan"))
+    gate(len(hon) >= 3, "enough honest rows",
+         f"{len(hon)} honest factual rows sampled (need 3+ to judge the next gate)")
+    gate(not hon or agree >= 0.75, "belief tracks truth (honest frame only)",
+         f"sign(margin) matches ground truth on {agree:.2f} of {len(hon)} honest rows")
+
+    framed = [r for r in rows if r["mode"] != "honest" and r["truth_value"] in (0, 1)]
+    if framed:
+        fa = float(np.mean([(r["margin"] > 0) == (r["truth_value"] == 1) for r in framed]))
+        print(f"  (info) framed rows track ground truth at {fa:.2f} over {len(framed)} rows "
+              "— expected to be LOW; it is the frame moving the model, which is the "
+              "recruit-then-modify question the design is about")
 
     est = sec_per_row * len(df)
     print(f"\n  throughput      {sec_per_row:.2f} s/row -> full manifest ({len(df)} rows) "
