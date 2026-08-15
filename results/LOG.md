@@ -392,3 +392,25 @@ simulation    counterfactual_world   40         1.0       0.650     0.650       
 - 2026-08-15 03:22 [qwen2.5-7b-instruct-synthetic-dry] transfer matrix (logreg, layer 12, labels=behavior): 16 cells (5 skipped), diag AUROC 0.571, off-diag 0.562
 - 2026-08-15 03:22 [qwen2.5-7b-instruct-synthetic-dry] H1 horse race (labels=behavior): R² scenario 0.078 | c-only 0.004 | both 0.083; ΔR² 0.005 (perm p=0.825, naive F p=0.74) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.571, within-class OOD 0.601, style 0.595, behavioral-text 0.508, length-only 0.519, random 0.485
 - 2026-08-15 03:22 [qwen2.5-7b-instruct-synthetic-dry] H2 monotonicity: Spearman ρ=-0.30 (p=0.259); H3 asymmetry high→low 0.575 vs low→high 0.548
+
+### 2026-08-15 — reproducibility check (independent hardware)
+
+The Qwen3.5-9B run was repeated from scratch on a **different physical machine** (RunPod
+US-KS-2, driver 580.159.04) from the original (EU-RO-1, driver 570.133.20), with a fresh
+model download and a fresh activation cache. Every headline number is identical to six
+decimal places:
+
+    quantity                       original      re-run
+    R² M0 (scenario)               0.199919      0.199919
+    R² M2 (both)                   0.289576      0.289576
+    ΔR²                            0.089657      0.089657
+    within-scenario permutation p  0.135973      0.135973
+    n off-diagonal pairs           240           240
+    in-distribution diag AUROC     0.979276      0.979276
+
+So the pipeline is deterministic end to end — including greedy decoding on different GPU
+hardware and driver versions, which is the step most likely to drift. Seeding is doing
+its job and the numbers are not an artifact of one machine.
+
+Incidental: the second host ran at 2.11 s/row against 1.12 s/row on the first, for
+identical work. Wall-clock estimates from one pod do not transfer to another.
