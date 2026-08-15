@@ -1,0 +1,10 @@
+,d_truth,simulation|counterfactual_world|everyday|plain,simulation|counterfactual_world|geography|plain,simulation|counterfactual_world|history|plain,simulation|counterfactual_world|science|plain,simulation|fictional_frame|everyday|plain,simulation|fictional_frame|geography|plain,simulation|fictional_frame|history|plain,simulation|fictional_frame|science|plain
+d_truth,1.0000001,-0.16461454,-0.21186621,-0.20025994,-0.26362237,-0.13899817,-0.13797808,-0.14210325,-0.2048133
+simulation|counterfactual_world|everyday|plain,-0.16461454,1.0000002,0.7064135,0.7835719,0.85778195,0.9060764,0.630254,0.7282103,0.802764
+simulation|counterfactual_world|geography|plain,-0.21186621,0.7064135,0.99999994,0.7033728,0.75716555,0.63477546,0.86452556,0.6461533,0.70458156
+simulation|counterfactual_world|history|plain,-0.20025994,0.7835719,0.7033728,0.9999998,0.8044736,0.7198981,0.6513097,0.91191053,0.74864274
+simulation|counterfactual_world|science|plain,-0.26362237,0.85778195,0.75716555,0.8044736,0.9999999,0.77252674,0.6679028,0.7304867,0.89111793
+simulation|fictional_frame|everyday|plain,-0.13899817,0.9060764,0.63477546,0.7198981,0.77252674,0.99999994,0.696079,0.7830901,0.85605127
+simulation|fictional_frame|geography|plain,-0.13797808,0.630254,0.86452556,0.6513097,0.6679028,0.696079,1.0,0.7282548,0.76968795
+simulation|fictional_frame|history|plain,-0.14210325,0.7282103,0.6461533,0.91191053,0.7304867,0.7830901,0.7282548,1.0000001,0.8122572
+simulation|fictional_frame|science|plain,-0.2048133,0.802764,0.70458156,0.74864274,0.89111793,0.85605127,0.76968795,0.8122572,1.0000002

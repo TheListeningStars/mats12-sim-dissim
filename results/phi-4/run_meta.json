@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-08-15T11:16:28",
+  "timestamp": "2026-08-15T11:19:46",
   "args": {
-    "model": "qwen3.5-9b",
+    "model": "phi-4",
     "dry_run": false,
     "synthetic": false,
-    "headline_only": false,
+    "headline_only": true,
     "limit": null,
     "site": "response",
     "label_source": "behavior"
   },
-  "key": "qwen3.5-9b",
+  "key": "phi-4",
   "seed": 0,
   "label_source": "behavior",
   "site": "response",
@@ -23,7 +23,7 @@
   "load_in_4bit": false,
   "dtype": "bfloat16",
   "max_new_tokens": 32,
-  "model_hf_id": "Qwen/Qwen3.5-9B",
+  "model_hf_id": "microsoft/phi-4",
   "manifest_rows": 1941,
   "manifest_cells": 30,
   "n_statements": 394,

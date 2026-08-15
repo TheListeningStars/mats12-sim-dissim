@@ -1,0 +1,9 @@
+source_cell,simulation|counterfactual_world|everyday|plain,simulation|counterfactual_world|geography|plain,simulation|counterfactual_world|history|plain,simulation|counterfactual_world|science|plain,simulation|fictional_frame|everyday|plain,simulation|fictional_frame|geography|plain,simulation|fictional_frame|history|plain,simulation|fictional_frame|science|plain
+simulation|counterfactual_world|everyday|plain,0.9838383838383838,0.9968203497615263,0.9868131868131867,1.0,0.9924812030075187,1.0,1.0,1.0
+simulation|counterfactual_world|geography|plain,0.9878787878787879,0.9936406995230526,0.9890109890109889,1.0,0.9949874686716791,1.0,1.0,1.0
+simulation|counterfactual_world|history|plain,0.993939393939394,0.9968203497615263,0.9802197802197802,1.0,0.9924812030075187,1.0,1.0,1.0
+simulation|counterfactual_world|science|plain,0.997979797979798,0.9968203497615263,0.9978021978021978,1.0,0.9974937343358395,1.0,1.0,1.0
+simulation|fictional_frame|everyday|plain,0.997979797979798,1.0,0.9912087912087912,1.0,1.0,1.0,1.0,1.0
+simulation|fictional_frame|geography|plain,0.997979797979798,0.9968203497615263,0.9868131868131867,1.0,1.0,1.0,1.0,1.0
+simulation|fictional_frame|history|plain,1.0,1.0,0.9824175824175824,1.0,1.0,1.0,1.0,1.0
+simulation|fictional_frame|science|plain,1.0,1.0,0.9978021978021978,1.0,0.9974937343358395,1.0,1.0,1.0
