@@ -1,3 +1,29 @@
+> # ⚠️ SUPERSEDED — 2026-08-15. Do not reuse these numbers.
+>
+> Kept for provenance only. Written from a reduced Qwen2.5-7B run whose central
+> quantity was later shown to be circular, so several specific claims below are now
+> known to be wrong, not merely preliminary:
+>
+> - **Every number came from `c`, which was circular with the probe label.** `c` equals
+>   `|t_hat|` exactly on rows the model lied on and exactly 0 elsewhere, and the label
+>   was `sign(said)·sign(t_hat)`. Same quantity, thresholded vs graded.
+> - **"Instrument validity (passes, on non-circular evidence)" is wrong.** The check it
+>   passed used the fitted direction. Re-measured against an independent belief signal,
+>   truth-valueless statements draw **0.79×** the margin of factual ones, not the
+>   "0.158×" claimed here — the model commits to preferences, so the `c ≈ 0` anchor
+>   does not exist and validity **fails**.
+> - **The two encouraging p-values were artifacts.** The naive F has a 74% type-I error
+>   rate on this design and cluster-on-source 76%; only the within-scenario permutation
+>   test is calibrated.
+> - The ΔR² / monotonicity numbers are from ~6 eval rows per cell on superseded prompts.
+>
+> What survived: the condition-label → instruction-detector observation (§2, second
+> finding), and the structural argument in §4 about `c` being a statement property —
+> which turned out to understate the problem.
+>
+> Current results: `results/qwen3.5-9b/` (1,941 rows), `results/LOG.md` from
+> 2026-08-14 onward, and `verification.md` for the independent re-derivation.
+
 # Does a measured truth-conflict axis organize deception-probe transfer?
 
 **Executive summary v1 — 2026-08-12.** Status: **preliminary.** Every number below comes
