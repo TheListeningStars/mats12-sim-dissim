@@ -1,0 +1,27 @@
+{
+  "label_source": "behavior",
+  "horse_race": {
+    "r2_scenario_only_M0": 0.040880387481830316,
+    "r2_c_only_M1": 0.001809250035316401,
+    "r2_both_M2": 0.04547923053092484,
+    "delta_r2_M2_vs_M0": 0.004598843049094525,
+    "naive_F_p": 0.7382537221425933,
+    "cluster_robust_p": {
+      "c_source": 0.753758074442121,
+      "c_target": 0.32368034274958973,
+      "abs_dc": 0.704097408197555
+    },
+    "perm_p_within_scenario": 0.7145708582834331,
+    "n_perm": 500,
+    "aic_M0": -292.35491583147063,
+    "aic_M1": -287.49433748144634,
+    "aic_M2": -287.6622541686281,
+    "n_pairs": 272
+  },
+  "in_dist_diag_auroc": 0.5138680151547798,
+  "within_class_ood_auroc": 0.566173353556166,
+  "style_shift_auroc": 0.6751980311355312,
+  "behavioral_text_auroc": 0.5560747663551402,
+  "length_only_auroc": 0.5360056182810221,
+  "random_direction_floor": 0.49089460320890277
+}

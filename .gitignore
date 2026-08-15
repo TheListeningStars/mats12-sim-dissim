@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# local machine / Claude Code session config — not project content
+.claude/
+
+# large, fully regenerable from src/data_build.py + a GPU run — not checked in
+cache/
+data/*.csv
+probes/
+*.pt
+*.npy
+
+# small result artifacts (json/png/csv under results/**) ARE tracked on purpose:
+# they're the evidence behind results/LOG.md's findings and cost real GPU time to
+# produce. Only ignore stray editor/OS junk here.
+results/**/.DS_Store

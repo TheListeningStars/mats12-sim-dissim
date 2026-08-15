@@ -1,0 +1,13 @@
+# Pin exact versions after first successful install (pip freeze) for reproducibility.
+torch>=2.3
+transformers>=4.44
+accelerate>=0.33
+bitsandbytes>=0.43        # 4-bit quantization (CUDA)
+scikit-learn>=1.5         # logistic-regression probes, AUROC
+scipy>=1.11               # Spearman rank correlation (H2)
+numpy>=1.26
+pandas>=2.2
+matplotlib>=3.9
+seaborn>=0.13             # heatmaps
+statsmodels>=0.14         # nested model comparison / likelihood-ratio for the horse race
+tqdm>=4.66

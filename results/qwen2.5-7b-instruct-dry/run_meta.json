@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-08-13T16:30:39",
+  "args": {
+    "model": "qwen2.5-7b-instruct",
+    "dry_run": true,
+    "synthetic": false,
+    "headline_only": false,
+    "label_source": "behavior"
+  },
+  "key": "qwen2.5-7b-instruct-dry",
+  "seed": 0,
+  "label_source": "behavior",
+  "n_per_cell": 100,
+  "truthfit_pairs_per_topic": 10,
+  "layer_fractions": [
+    0.6,
+    0.7,
+    0.8
+  ],
+  "load_in_4bit": true,
+  "max_new_tokens": 64,
+  "model_hf_id": "Qwen/Qwen2.5-7B-Instruct"
+}

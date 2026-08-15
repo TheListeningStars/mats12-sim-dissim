@@ -1,0 +1,184 @@
+- 2026-08-12 20:29 [qwen2.5-7b-instruct-synthetic-dry] cached activations: 368 rows x layers [10, 12, 14] **SYNTHETIC — smoke test only**
+- 2026-08-12 20:29 [qwen2.5-7b-instruct-synthetic-dry] d_truth: layer 12, held-out truth AUROC 0.809; instrument validity: FAIL {'dissim_high': False, 'preference_near_zero': True, 'subtype_monotone': True, 'honest_low': True}
+- 2026-08-12 20:30 [qwen2.5-7b-instruct-synthetic-dry] transfer matrix (logreg, layer 12): 21 cells, diag AUROC 0.653, off-diag 0.573
+- 2026-08-12 20:30 [qwen2.5-7b-instruct-synthetic-dry] H1 horse race: R² scenario 0.040 | c-only 0.018 | both 0.050; ΔR² 0.010 (perm p=0.820, naive F p=0.23) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.653, within-class OOD 0.580, style 0.628, behavioral 0.603, random 0.493
+- 2026-08-12 20:30 [qwen2.5-7b-instruct-synthetic-dry] H2 monotonicity: Spearman ρ=0.36 (p=0.111); H3 asymmetry high→low 0.573 vs low→high 0.564
+- 2026-08-12 20:31 [qwen2.5-7b-instruct-synthetic-dry] d_truth: layer 12, held-out truth AUROC 0.809; instrument validity: FAIL {'dissim_high': False, 'preference_near_zero': True, 'subtype_monotone': True, 'honest_low': True}
+- 2026-08-12 20:31 [qwen2.5-7b-instruct-synthetic-dry] transfer matrix (logreg, layer 12): 21 cells, diag AUROC 0.653, off-diag 0.573
+- 2026-08-12 20:31 [qwen2.5-7b-instruct-synthetic-dry] H1 horse race: R² scenario 0.040 | c-only 0.018 | both 0.050; ΔR² 0.010 (perm p=0.820, naive F p=0.23) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.653, within-class OOD 0.580, style 0.628, behavioral 0.603, random 0.493
+- 2026-08-12 20:31 [qwen2.5-7b-instruct-synthetic-dry] H2 monotonicity: Spearman ρ=0.36 (p=0.111); H3 asymmetry high→low 0.573 vs low→high 0.564
+- 2026-08-12 21:11 [qwen2.5-7b-instruct-dry] cached activations: 368 rows x layers [17, 20, 22]
+- 2026-08-12 21:11 [qwen2.5-7b-instruct-dry] d_truth: layer 17, held-out truth AUROC 1.000; instrument validity: PASS {'dissim_high': True, 'preference_near_zero': True, 'subtype_monotone': True, 'honest_low': True}
+- 2026-08-12 21:11 [qwen2.5-7b-instruct-dry] transfer matrix (logreg, layer 17): 21 cells, diag AUROC 1.000, off-diag 0.986
+- 2026-08-12 21:11 [qwen2.5-7b-instruct-dry] H1 horse race: R² scenario 0.449 | c-only 0.097 | both 0.495; ΔR² 0.046 (perm p=0.008, naive F p=9.4e-08) → c ADDS variance beyond scenario. Baselines: diag 1.000, within-class OOD 0.999, style 1.000, behavioral 0.931, random 0.472
+- 2026-08-12 21:11 [qwen2.5-7b-instruct-dry] H2 monotonicity: Spearman ρ=0.20 (p=0.384); H3 asymmetry high→low 0.995 vs low→high 0.975
+- 2026-08-12 22:27 [qwen2.5-7b-instruct-synthetic-dry] cached activations: 368 rows x layers [10, 12, 14] **SYNTHETIC — smoke test only**
+- 2026-08-12 22:27 [qwen2.5-7b-instruct-synthetic-dry] d_truth: layer 12, held-out truth AUROC 0.802; validity FAIL {'lies_high': True, 'truths_low': True, 'preference_t_hat_zero': False, 'honest_low': True}; parse rate 1.000
+- 2026-08-12 22:27 [qwen2.5-7b-instruct-synthetic-dry] compliance by cell group:
+```
+                                     n  parse_rate  compliance  lie_rate
+mode          sim_subtype                                               
+dissimulation                       96         1.0       0.583     0.583
+honest                              96         1.0       1.000     0.000
+simulation    counterfactual_world  48         1.0       0.667     0.667
+              fictional_frame       48         1.0       0.792     0.500
+              persona               48         1.0       0.771     0.229
+```
+- 2026-08-12 22:27 [qwen2.5-7b-instruct-synthetic-dry] transfer matrix (logreg, layer 12, labels=behavior): 14 cells (7 skipped), diag AUROC 0.690, off-diag 0.626
+- 2026-08-12 22:27 [qwen2.5-7b-instruct-synthetic-dry] H1 horse race (labels=behavior): R² scenario 0.019 | c-only 0.018 | both 0.040; ΔR² 0.020 (perm p=0.525, naive F p=0.3) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.690, within-class OOD 0.647, style 0.714, behavioral-text 0.517, length-only 0.513, random 0.488
+- 2026-08-12 22:27 [qwen2.5-7b-instruct-synthetic-dry] H2 monotonicity: Spearman ρ=-0.27 (p=0.350); H3 asymmetry high→low 0.637 vs low→high 0.615
+- 2026-08-12 23:04 [qwen2.5-7b-instruct-dry] cached activations: 368 rows x layers [17, 20, 22]
+- 2026-08-12 23:04 [qwen2.5-7b-instruct-dry] d_truth: layer 17, held-out truth AUROC 1.000; validity PASS {'lies_high': True, 'truths_low': True, 'preference_t_hat_zero': True, 'honest_low': True}; parse rate 1.000
+- 2026-08-12 23:04 [qwen2.5-7b-instruct-dry] compliance by cell group:
+```
+                                     n  parse_rate  compliance  lie_rate
+mode          sim_subtype                                               
+dissimulation                       96         1.0       0.740     0.740
+honest                              96         1.0       1.000     0.000
+simulation    counterfactual_world  48         1.0       0.979     0.979
+              fictional_frame       48         1.0       0.979     0.396
+              persona               48         1.0       0.979     0.021
+```
+- 2026-08-12 23:04 [qwen2.5-7b-instruct-dry] !! DEGENERATE cells (one verdict for ~all rows): ['dissimulation|-|science|formal']
+- 2026-08-12 23:04 [qwen2.5-7b-instruct-dry] transfer matrix (logreg, layer 17, labels=behavior): 13 cells (8 skipped), diag AUROC 0.996, off-diag 0.987
+- 2026-08-12 23:04 [qwen2.5-7b-instruct-dry] H1 horse race (labels=behavior): R² scenario 0.107 | c-only 0.044 | both 0.122; ΔR² 0.015 (perm p=0.747, naive F p=0.46) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.996, within-class OOD 0.993, style 0.993, behavioral-text 0.932, length-only 0.752, random 0.477
+- 2026-08-12 23:04 [qwen2.5-7b-instruct-dry] H2 monotonicity: Spearman ρ=-0.07 (p=0.811); H3 asymmetry high→low 0.982 vs low→high 0.993
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-synthetic-dry] d_truth: layer 12, held-out truth AUROC 0.802; validity FAIL {'lies_high': True, 'truths_low': True, 'preference_t_hat_zero': False, 'honest_low': True}; parse rate 1.000
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-synthetic-dry] compliance by cell group:
+```
+                                     n  parse_rate  compliance  lie_rate
+mode          sim_subtype                                               
+dissimulation                       96         1.0       0.583     0.583
+honest                              96         1.0       1.000     0.000
+simulation    counterfactual_world  48         1.0       0.667     0.667
+              fictional_frame       48         1.0       0.792     0.500
+              persona               48         1.0       0.771     0.229
+```
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-synthetic-dry] transfer matrix (logreg, layer 12, labels=behavior): 14 cells (7 skipped), diag AUROC 0.690, off-diag 0.626
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-synthetic-dry] H1 horse race (labels=behavior): R² scenario 0.019 | c-only 0.018 | both 0.040; ΔR² 0.020 (perm p=0.525, naive F p=0.3) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.690, within-class OOD 0.647, style 0.714, behavioral-text 0.517, length-only 0.513, random 0.488
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-synthetic-dry] H2 monotonicity: Spearman ρ=-0.27 (p=0.350); H3 asymmetry high→low 0.637 vs low→high 0.615
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-dry] d_truth: layer 17, held-out truth AUROC 1.000; validity PASS {'lies_high': True, 'truths_low': True, 'preference_t_hat_zero': True, 'honest_low': True}; parse rate 1.000
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-dry] compliance by cell group:
+```
+                                     n  parse_rate  compliance  lie_rate
+mode          sim_subtype                                               
+dissimulation                       96         1.0       0.740     0.740
+honest                              96         1.0       1.000     0.000
+simulation    counterfactual_world  48         1.0       0.979     0.979
+              fictional_frame       48         1.0       0.979     0.396
+              persona               48         1.0       0.979     0.021
+```
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-dry] !! DEGENERATE cells (one verdict for ~all rows): ['dissimulation|-|science|formal']
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-dry] transfer matrix (logreg, layer 17, labels=behavior): 13 cells (8 skipped), diag AUROC 0.996, off-diag 0.987
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-dry] H1 horse race (labels=behavior): R² scenario 0.107 | c-only 0.044 | both 0.122; ΔR² 0.015 (perm p=0.747, naive F p=0.46) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.996, within-class OOD 0.993, style 0.993, behavioral-text 0.932, length-only 0.752, random 0.477
+- 2026-08-12 23:51 [qwen2.5-7b-instruct-dry] H2 monotonicity: Spearman ρ=-0.07 (p=0.811); H3 asymmetry high→low 0.982 vs low→high 0.993
+
+## 2026-08-13 — v3 HARD-FACT run (Qwen2.5-7B, dry, behaviour labels): THE CEILING BROKE
+
+Prompt hash f05b8c06fb99, 592 rows, `difficulty` present, label_source=behavior.
+Still the DRY run — the full run has never completed.
+
+**1. The hard bank did what it was built to do.**
+
+    difficulty   n    mean |t_hat|   p10     frac<0.3
+    easy         32   0.685          0.564   0.03
+    hard         48   0.400          0.097   0.38
+
+38% of hard statements land in the genuinely-uncertain region, against 0% for the whole
+easy-only bank previously. d_truth (fit on EASY truthfit pairs only) still reads held-out
+easy true/false at AUROC 0.961, so the instrument is intact while its inputs got harder.
+Instrument validity PASS on all four checks; preference/factual |t_hat| ratio 0.133.
+
+**2. Transfer stopped being at ceiling.**
+
+    metric               v2 (easy only)   v3 (with hard)
+    off-diag mean        0.987            0.868
+    off-diag median      1.000            0.907
+    off-diag sd          0.031            0.123
+    frac >= 0.99         0.80             0.16
+    off-diag min         0.857            0.571
+    in-distribution      0.996            0.901
+
+And `c` finally has between-cell variance: range 0.200–0.730, sd 0.055 → **0.167**.
+17 usable cells (was 13). Length-only baseline fell 0.752 → 0.537; random floor 0.497.
+
+**3. H1: improved threefold, still not supported on the conservative test.**
+ΔR² 0.015 → **0.040**; naive F p = 0.006; AIC prefers M2 (−403.1) over M0 (−396.2);
+cluster-robust **c_target p = 0.019** (c_source p = 0.85, |dc| p = 0.083). But the
+pre-registered primary test — permutation of c *within* scenario groups — gives
+**p = 0.39**. Reported as not supported. Caveat on the one significant coefficient:
+standard errors are clustered on `source_cell`, which is the wrong dimension for a
+c_target effect; two-way (or target-side) clustering is needed before believing it.
+H2 monotonicity still flat: Spearman 0.12, p = 0.65.
+
+**4. NEW POSITIVE — the construct works at ROW level, where H1 tested it at CELL level.**
+One probe, trained across cells, evaluated within strata of the model's internal
+confidence in the proposition:
+
+    stratum              all rows    excluding honest-prompt errors
+    |t_hat| < 0.3        0.802       0.887
+    |t_hat| 0.3–0.6      0.771       0.861
+    |t_hat| > 0.6        0.991       0.991
+
+Deception is near-perfectly detectable when the model is confident about the fact and
+markedly less so when it is not. Red-teamed: roughly half the raw gap was mislabelled
+sincere errors (see 5); the effect survives their removal. It is a threshold, not a
+gradient — the two low-confidence bins are indistinguishable from each other.
+This is the truth-conflict idea earning its keep in a form the pre-registration did not
+test: `c` fails as a cell-level predictor of transfer because averaging destroys its
+variance, while `|t_hat|` predicts per-row detectability.
+
+**5. NEW PROBLEM — `actually_lied` conflates lying with being wrong.**
+Honest-prompt accuracy fell to 0.894, and every error is on hard facts (easy 0.0%,
+hard 17.7%). Those 17 rows are labelled lies because `actually_lied` is defined against
+GROUND TRUTH — but the model was answering honestly and simply got it wrong. 7% of all
+lie-labelled rows are such sincere errors. On those rows t_hat sides with the model's
+answer only 29% of the time and mean |t_hat| is 0.284 (vs 0.541 when correct), so these
+are mostly *low-confidence* errors rather than confident false beliefs.
+Fix required: define the label relative to the model's own represented belief
+(`sign(t_hat)`) rather than ground truth — assert-against-own-belief is the construct the
+project has been after all along. This becomes unavoidable now that the bank reaches the
+edge of the model's knowledge.
+
+**Open:** full run still not done; batching optimisation not yet verified (see below).
+- 2026-08-13 09:44 [qwen2.5-7b-instruct-synthetic-dry] cached activations: 592 rows x layers [10, 12, 14] **SYNTHETIC — smoke test only**
+- 2026-08-13 09:44 [qwen2.5-7b-instruct-synthetic-dry] d_truth: layer 12, held-out truth AUROC 0.911; validity PASS {'lies_high': True, 'truths_low': True, 'preference_t_hat_zero': True, 'honest_low': True}; parse rate 1.000
+- 2026-08-13 09:44 [qwen2.5-7b-instruct-synthetic-dry] compliance by cell group:
+```
+                                      n  parse_rate  compliance  lie_rate
+mode          sim_subtype                                                
+dissimulation                       160         1.0       0.550     0.550
+honest                              160         1.0       1.000     0.000
+simulation    counterfactual_world   80         1.0       0.675     0.675
+              fictional_frame        80         1.0       0.700     0.525
+              persona                80         1.0       0.812     0.188
+```
+- 2026-08-13 09:44 [qwen2.5-7b-instruct-synthetic-dry] t_hat by difficulty: {"easy": {"n_statements": 32, "mean_abs_t_hat": 0.40827053785324097, "frac_below_0.3": 0.21875, "p10": 0.1090032309293747}, "hard": {"n_statements": 48, "mean_abs_t_hat": 0.1919536143541336, "frac_below_0.3": 0.7708333333333334, "p10": 0.04523119330406189}}
+- 2026-08-13 09:44 [qwen2.5-7b-instruct-synthetic-dry] transfer matrix (logreg, layer 12, labels=behavior): 17 cells (4 skipped), diag AUROC 0.514, off-diag 0.571
+- 2026-08-13 09:45 [qwen2.5-7b-instruct-synthetic-dry] H1 horse race (labels=behavior): R² scenario 0.041 | c-only 0.002 | both 0.045; ΔR² 0.005 (perm p=0.715, naive F p=0.74) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.514, within-class OOD 0.566, style 0.675, behavioral-text 0.556, length-only 0.536, random 0.491
+- 2026-08-13 09:45 [qwen2.5-7b-instruct-synthetic-dry] H2 monotonicity: Spearman ρ=-0.24 (p=0.353); H3 asymmetry high→low 0.582 vs low→high 0.560
+
+### 2026-08-13 (cont.) — two fixes found while checking the v3 outputs
+
+**BUG (would have silently ruined the full run).** `run_all.py` rebuilt the manifest only
+`if not manifest_path.exists()`. On Kaggle with Persistence="Files only", `data/` survives
+across sessions, so `data/manifest.csv` was still the v2 **1,336 easy-only rows** even
+after the hard bank shipped — the dry run was unaffected (its manifest is always rebuilt)
+which is why this hid. The full run would have used the old facts and reproduced the
+ceiling. Now the manifest is always rebuilt; it is seeded and deterministic, so this is
+cheap and idempotent, and cache invalidation stays with the prompt hash.
+
+**Speed.** The dry run took over an hour. Generation dominates: every row is
+MAX_NEW_TOKENS sequential decode steps, run one row at a time. `MAX_NEW_TOKENS` 64 -> 32
+(the response only needs the verdict line plus one sentence), which roughly halves the
+dominant cost. `max_new_tokens` now participates in cache invalidation alongside the
+prompt hash, since changing it changes the activations without changing any prompt.
+
+**Batching: attempted, NOT shipped.** Batched generation is the larger lever (~4-8x), but
+the equivalence check against batch-size-1 failed on 2 of 12 rows (cosine 0.958/0.982,
+verdicts identical). One real bug was found and fixed along the way — the re-forward pass
+needs `position_ids` derived from the attention mask, since left padding otherwise shifts
+RoPE — but that did not close the gap, and the residual cause is unresolved (most likely
+greedy decoding diverging under different batch shapes, which would be benign, but this is
+unconfirmed). Batching is deferred rather than shipped: it sits on the path that produces
+every number in the project, and a silent corruption there is worse than a slow run.

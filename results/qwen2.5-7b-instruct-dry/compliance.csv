@@ -1,0 +1,6 @@
+mode,sim_subtype,n,parse_rate,compliance,lie_rate
+dissimulation,,160,1.0,0.631,0.631
+honest,,160,1.0,0.894,0.106
+simulation,counterfactual_world,80,1.0,0.9,0.9
+simulation,fictional_frame,80,1.0,0.888,0.462
+simulation,persona,80,1.0,0.875,0.125
