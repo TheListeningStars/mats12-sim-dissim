@@ -79,11 +79,18 @@ def validity_check(cdf: pd.DataFrame, rdir) -> dict:
       honest_low           honest cells carry ~0 c
     Subtype ORDERING is reported but no longer gated on: under behaviour labelling the
     thing that varies across subtypes is the lie RATE, not the conflict per lie.
+
+    IMPORTANT: this uses `contradicts_truth` (ground truth), NOT `actually_lied`
+    (belief-based, sign(t_hat)) for the lied/told split. actually_lied is derived from
+    the same t_hat that c is derived from, so lied/told split on it would make c_lied
+    high and c_told ~0 by construction — a tautology, not a validity check. Ground truth
+    is an independent signal the axis was never fit on, which is what makes this a real
+    test of whether c tracks the intended construct rather than just echoing its own input.
     """
     exp = cdf[(cdf.split != "truthfit")]
     fac = exp[(exp.truth_value != -1) & exp.parsed]
-    lied = fac[fac.actually_lied == 1]
-    told = fac[fac.actually_lied == 0]
+    lied = fac[fac.contradicts_truth == 1]
+    told = fac[fac.contradicts_truth == 0]
     pref_t = exp[exp.truth_value == -1].t_hat.abs()
     fact_t = fac.t_hat.abs()          # factual statements, for the ratio comparison
 
@@ -164,7 +171,7 @@ def run(key: str, dry_run: bool = False) -> None:
     rdir = config.results_dir(key)
     df = df[df.id.isin(layers[next(iter(layers))][0])]   # rows with cached activations
 
-    df = behavior.annotate(df, texts)                    # said / parsed / complied / actually_lied
+    df = behavior.annotate(df, texts)                    # said / parsed / complied / contradicts_truth
 
     # honest/plain factual rows: truthfit for fitting, train/eval for held-out validity
     hp = df[(df["mode"] == "honest") & (df["style"] == "plain") & (df.truth_value != -1)]
@@ -195,13 +202,25 @@ def run(key: str, dry_run: bool = False) -> None:
     cdf["c_assumed"] = truth_conflict(cdf.t_hat.to_numpy(), cdf.asserted_true.to_numpy())
     cdf["c_from"] = np.where(cdf.parsed, "actual", "assumed_fallback")
 
+    # actually_lied (2026-08-13 fix, results/LOG.md "actually_lied conflates lying with
+    # being wrong"): the deception-probe label must be assert-against-OWN-BELIEF, not
+    # assert-against-ground-truth. On hard facts the model is sometimes sincerely wrong —
+    # under the old ground-truth definition those honest-mode rows got labelled "lied",
+    # contaminating the probe's positive class with honest mistakes. Equivalent to
+    # cdf.c > 0 (same sign comparison); spelled out for clarity and to make the NaN
+    # handling explicit rather than relying on c's assumed-fallback behaviour.
+    belief_valid = (cdf.parsed.to_numpy() & (cdf.truth_value.to_numpy() != -1)
+                    & cdf.t_hat.notna().to_numpy())
+    lied_vs_belief = cdf.said.to_numpy().astype(float) * cdf.t_hat.to_numpy() < 0
+    cdf["actually_lied"] = np.where(belief_valid, lied_vs_belief, np.nan)
+
     validity = validity_check(cdf, rdir)
     comp = behavior.compliance_table(cdf)
     degenerate = behavior.degenerate_cells(cdf)
 
     cols = ["id", "statement_id", "cell", "mode", "sim_subtype", "scenario", "topic",
             "style", "split", "truth_value", "asserted_true", "said", "parsed", "complied",
-            "actually_lied", "t_hat", "c", "c_assumed", "c_from"]
+            "contradicts_truth", "actually_lied", "t_hat", "c", "c_assumed", "c_from"]
     if "difficulty" in cdf:
         cols.insert(cols.index("style"), "difficulty")
     cdf[cols].to_csv(rdir / "c_scores.csv", index=False)

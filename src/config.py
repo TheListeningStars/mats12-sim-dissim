@@ -59,6 +59,8 @@ LAYER_FRACTIONS = (0.6, 0.7, 0.8)
 
 LOAD_IN_4BIT = True
 MAX_NEW_TOKENS = 32
+CHECKPOINT_EVERY_N_ROWS = 20    # activation-cache flush interval — protects a rented-GPU
+                                # run against spot eviction / dropped SSH / any crash
 
 # dataset design -----------------------------------------------------------
 MODES = ("honest", "dissimulation", "simulation")

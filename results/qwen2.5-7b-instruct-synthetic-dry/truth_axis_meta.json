@@ -1,6 +1,6 @@
 {
   "best_layer": 12,
-  "sigma": 5.352768421173096,
+  "sigma": 5.3527679443359375,
   "d_truth_bias": 0.0363612174987793,
   "truth_auroc_per_layer": {
     "10": 0.8025,
@@ -12,30 +12,30 @@
     "t_hat_by_difficulty": {
       "easy": {
         "n_statements": 32,
-        "mean_abs_t_hat": 0.40827053785324097,
+        "mean_abs_t_hat": 0.40827059745788574,
         "frac_below_0.3": 0.21875,
-        "p10": 0.1090032309293747
+        "p10": 0.10900328308343887
       },
       "hard": {
         "n_statements": 48,
-        "mean_abs_t_hat": 0.1919536143541336,
+        "mean_abs_t_hat": 0.191953644156456,
         "frac_below_0.3": 0.7708333333333334,
-        "p10": 0.04523119330406189
+        "p10": 0.04523121565580368
       }
     },
     "group_means_c": {
-      "honest": 0.021874268162286,
-      "dissimulation": 0.12555048983194866,
-      "counterfactual_world": 0.1747357483196538,
-      "fictional_frame": 0.15513499064254574,
-      "persona": 0.042681963695213196,
-      "preference_no_truth": 0.09324749605730176
+      "honest": 0.021874269825362024,
+      "dissimulation": 0.12555049799848347,
+      "counterfactual_world": 0.17473575866315513,
+      "fictional_frame": 0.15513500198721886,
+      "persona": 0.04268196823541075,
+      "preference_no_truth": 0.09324750257655978
     },
-    "c_when_asserted_falsehood": 0.23380468840050936,
-    "c_when_asserted_truth": 0.018738755651870925,
-    "preference_mean_abs_t_hat": 0.12766598165035248,
+    "c_when_asserted_falsehood": 0.2338047043967936,
+    "c_when_asserted_truth": 0.018738756915992978,
+    "preference_mean_abs_t_hat": 0.12766599655151367,
     "factual_mean_abs_t_hat": 0.2784804105758667,
-    "preference_to_factual_t_hat_ratio": 0.4584379196166992,
+    "preference_to_factual_t_hat_ratio": 0.458437979221344,
     "n_lied": 199,
     "n_told_truth": 361,
     "checks": {

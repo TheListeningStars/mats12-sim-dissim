@@ -1,110 +1,116 @@
 {
-  "spearman_rho": -0.24019607843137256,
-  "spearman_p": 0.3530886590520007,
-  "auroc_high_to_low_c": 0.5822241917600373,
-  "auroc_low_to_high_c": 0.5603530747234791,
+  "spearman_rho": 0.1001031991744066,
+  "spearman_p": 0.6926899392518375,
+  "auroc_high_to_low_c": 0.5134172650046352,
+  "auroc_low_to_high_c": 0.539760934871229,
   "per_target": [
     {
       "target_cell": "dissimulation|-|everyday|formal",
       "scenario_target": "instructed_lying",
-      "auroc": 0.6224489795918366,
-      "c": 0.2682799603324383
+      "auroc": 0.5884353741496599,
+      "c": 0.2983510352671146
     },
     {
       "target_cell": "dissimulation|-|everyday|plain",
       "scenario_target": "instructed_lying",
-      "auroc": 0.6205357142857143,
-      "c": 0.2526486051501706
+      "auroc": 0.5379464285714286,
+      "c": 0.303178340755403
     },
     {
       "target_cell": "dissimulation|-|geography|formal",
       "scenario_target": "instructed_lying",
-      "auroc": 0.5196232339089482,
-      "c": 0.1651258983395316
+      "auroc": 0.565149136577708,
+      "c": 0.2594835630484989
     },
     {
       "target_cell": "dissimulation|-|geography|plain",
       "scenario_target": "instructed_lying",
-      "auroc": 0.6577708006279435,
-      "c": 0.2443814218044281
+      "auroc": 0.5180375180375181,
+      "c": 0.2550980649888515
     },
     {
       "target_cell": "dissimulation|-|history|formal",
       "scenario_target": "instructed_lying",
-      "auroc": 0.6547619047619048,
-      "c": 0.2423409558832645
+      "auroc": 0.5442176870748299,
+      "c": 0.3231212885843383
     },
     {
       "target_cell": "dissimulation|-|history|plain",
       "scenario_target": "instructed_lying",
-      "auroc": 0.6479591836734694,
-      "c": 0.2490423664450645
+      "auroc": 0.5867346938775511,
+      "c": 0.2227500601170154
     },
     {
       "target_cell": "dissimulation|-|science|formal",
       "scenario_target": "instructed_lying",
-      "auroc": 0.6106750392464678,
-      "c": 0.1496898620747603
+      "auroc": 0.5243328100470956,
+      "c": 0.2779954900699002
     },
     {
       "target_cell": "dissimulation|-|science|plain",
       "scenario_target": "instructed_lying",
-      "auroc": 0.5790476190476191,
-      "c": 0.1825689401477575
+      "auroc": 0.5934065934065934,
+      "c": 0.1955609519034624
     },
     {
       "target_cell": "simulation|counterfactual_world|everyday|plain",
       "scenario_target": "counterfactual",
-      "auroc": 0.5223214285714286,
-      "c": 0.3149516807276417
+      "auroc": 0.5143229166666666,
+      "c": 0.3197122475301677
     },
     {
       "target_cell": "simulation|counterfactual_world|geography|plain",
       "scenario_target": "counterfactual",
-      "auroc": 0.603021978021978,
-      "c": 0.2282456122338771
+      "auroc": 0.4444444444444444,
+      "c": 0.2787570890039205
     },
     {
       "target_cell": "simulation|counterfactual_world|history|plain",
       "scenario_target": "counterfactual",
-      "auroc": 0.5521978021978021,
-      "c": 0.2561897901552064
+      "auroc": 0.6043956043956044,
+      "c": 0.2845491354282086
     },
     {
       "target_cell": "simulation|counterfactual_world|science|plain",
       "scenario_target": "counterfactual",
-      "auroc": 0.6236979166666667,
-      "c": 0.2316470498986104
+      "auroc": 0.62,
+      "c": 0.3057935630472806
     },
     {
       "target_cell": "simulation|fictional_frame|everyday|plain",
       "scenario_target": "roleplay",
-      "auroc": 0.5390625,
-      "c": 0.2629072776135917
+      "auroc": 0.5286458333333334,
+      "c": 0.286038881740891
     },
     {
       "target_cell": "simulation|fictional_frame|geography|plain",
       "scenario_target": "roleplay",
-      "auroc": 0.49,
-      "c": 0.2503643996185726
+      "auroc": 0.5214646464646464,
+      "c": 0.2295438095249913
     },
     {
       "target_cell": "simulation|fictional_frame|history|plain",
       "scenario_target": "roleplay",
-      "auroc": 0.5372023809523809,
-      "c": 0.3195100635290145
+      "auroc": 0.45089285714285715,
+      "c": 0.3030038961971348
     },
     {
       "target_cell": "simulation|fictional_frame|science|plain",
       "scenario_target": "roleplay",
-      "auroc": 0.505859375,
-      "c": 0.2529915139079094
+      "auroc": 0.5773809523809523,
+      "c": 0.2361891611168781
     },
     {
       "target_cell": "simulation|persona|history|plain",
       "scenario_target": "persona",
-      "auroc": 0.5555555555555556,
-      "c": 0.1783749560515085
+      "auroc": 0.4652777777777778,
+      "c": 0.2191420745104551
+    },
+    {
+      "target_cell": "simulation|persona|science|plain",
+      "scenario_target": "persona",
+      "auroc": 0.5073529411764706,
+      "c": 0.1106947250664233
     }
   ]
 }

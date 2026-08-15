@@ -161,9 +161,63 @@ def load_cache(key: str):
     return meta, layers, texts
 
 
+def _save_cache(cdir, layer_ids: list[int], ids: np.ndarray,
+                acts_by_layer: dict[int, np.ndarray], texts: list[str], meta: dict) -> None:
+    """Write layer<L>.npz + texts.csv + meta.json as one unit.
+
+    Builds the new files in a scratch subdir first, then swaps each into place with
+    Path.replace (atomic on POSIX for a same-filesystem rename), so a crash mid-write
+    can never leave load_cache() looking at a half-written / truncated file. This is
+    called both as a periodic checkpoint mid-run and as the final save, so "checkpoint"
+    and "done" are the same code path rather than two things that can drift apart.
+    """
+    tmp = cdir / ".tmp_write"
+    tmp.mkdir(exist_ok=True)
+    for L in layer_ids:
+        np.savez_compressed(tmp / f"layer{L}.npz", ids=ids, acts=acts_by_layer[L])
+    pd.DataFrame({"id": ids, "text": texts}).to_csv(tmp / "texts.csv", index=False)
+    (tmp / "meta.json").write_text(json.dumps(meta, indent=2))
+    for p in list(tmp.iterdir()):
+        p.replace(cdir / p.name)
+    tmp.rmdir()
+
+
+def _load_resumable(cdir, layer_ids: list[int], prompt_hash: str):
+    """Return (per_layer: {L: {id: vec}}, texts: {id: text}) recovered from a prior
+    partial or complete cache that matches this run's identity (same prompts, same
+    max_new_tokens, same layer set) — empty dicts if there's nothing usable to resume."""
+    meta_p = cdir / "meta.json"
+    if not meta_p.exists():
+        return {L: {} for L in layer_ids}, {}
+    meta = json.loads(meta_p.read_text())
+    if (meta.get("prompt_hash") != prompt_hash
+            or meta.get("max_new_tokens") != config.MAX_NEW_TOKENS
+            or sorted(meta.get("layers", [])) != sorted(layer_ids)):
+        print(f"cache is stale — starting fresh "
+              f"(prompt_hash {meta.get('prompt_hash')} -> {prompt_hash}; "
+              f"max_new_tokens {meta.get('max_new_tokens')} -> {config.MAX_NEW_TOKENS})")
+        return {L: {} for L in layer_ids}, {}
+    try:
+        loaded = {L: np.load(cdir / f"layer{L}.npz") for L in layer_ids}
+        texts_df = pd.read_csv(cdir / "texts.csv")
+    except FileNotFoundError:
+        return {L: {} for L in layer_ids}, {}
+    ids = loaded[layer_ids[0]]["ids"].astype(str)
+    per_layer = {L: dict(zip(ids, loaded[L]["acts"])) for L in layer_ids}
+    texts = dict(zip(texts_df.id.astype(str), texts_df.text))
+    return per_layer, texts
+
+
 def run(model_key: str, dry_run: bool = False, synthetic: bool = False,
         headline_only: bool = False) -> str:
-    """Cache activations for every manifest row; returns the cache/results key."""
+    """Cache activations for every manifest row; returns the cache/results key.
+
+    Resumable: every config.CHECKPOINT_EVERY_N_ROWS rows (and at the end) the cache is
+    flushed to disk with whatever's done so far. Re-running with the same model /
+    prompts / max_new_tokens picks up where it left off instead of repeating already-
+    paid-for GPU generation, so a spot eviction, dropped SSH session, or crash costs at
+    most one checkpoint interval of work, not the whole run.
+    """
     key = config.effective_key(model_key, synthetic, dry_run)
     df = pd.read_csv(config.manifest_path(dry_run), keep_default_na=False)
     if headline_only:
@@ -177,46 +231,66 @@ def run(model_key: str, dry_run: bool = False, synthetic: bool = False,
     meta_p = cdir / "meta.json"
     if meta_p.exists():
         meta = json.loads(meta_p.read_text())
-        cached = set(np.load(cdir / f"layer{meta['layers'][0]}.npz")["ids"].astype(str))
-        stale = (meta.get("prompt_hash") != prompt_hash
-                 or meta.get("max_new_tokens") != config.MAX_NEW_TOKENS)
-        if stale:
-            print(f"cache is stale for {key} — recomputing "
-                  f"(prompt_hash {meta.get('prompt_hash')} -> {prompt_hash}; "
-                  f"max_new_tokens {meta.get('max_new_tokens')} -> {config.MAX_NEW_TOKENS})")
-        elif set(df.id) <= cached:
-            print(f"cache complete for {key} ({len(cached)} ids) — skipping")
+        if (meta.get("prompt_hash") == prompt_hash
+                and meta.get("max_new_tokens") == config.MAX_NEW_TOKENS
+                and meta.get("model_key") == model_key
+                and meta.get("headline_only") == headline_only
+                and meta.get("complete")):
+            print(f"cache complete for {key} ({meta.get('n_rows')} ids) — skipping "
+                  "(no model load needed)")
             return key
 
     if synthetic:
         acts_by_layer, texts = synthetic_activations(df)
         layer_ids = sorted(acts_by_layer)
-    else:
-        from tqdm import tqdm
-        model, tok = load_model(model_key)
-        layer_map = resolve_layers(model)
-        layer_ids = sorted(layer_map.values())
-        per_layer = {L: [] for L in layer_ids}
-        texts = []
-        for r in tqdm(df.itertuples(), total=len(df), desc=f"activations {key}"):
-            vecs, text = capture_residual(model, tok, r.prompt, layer_ids)
-            for L in layer_ids:
-                per_layer[L].append(vecs[L])
-            texts.append(text)
-        acts_by_layer = {L: np.stack(per_layer[L]).astype(np.float32) for L in layer_ids}
+        ids = df.id.to_numpy(dtype=str)
+        _save_cache(cdir, layer_ids, ids, acts_by_layer, texts, {
+            "model_key": model_key, "layers": layer_ids, "synthetic": synthetic,
+            "dry_run": dry_run, "headline_only": headline_only, "n_rows": len(df),
+            "seed": config.SEED, "prompt_hash": prompt_hash,
+            "max_new_tokens": config.MAX_NEW_TOKENS, "complete": True,
+        })
+        config.log(f"cached activations: {len(df)} rows x layers {layer_ids} "
+                   "**SYNTHETIC — smoke test only**", key)
+        return key
 
-    ids = df.id.to_numpy(dtype=str)
-    for L in layer_ids:
-        np.savez_compressed(cdir / f"layer{L}.npz", ids=ids, acts=acts_by_layer[L])
-    pd.DataFrame({"id": ids, "text": texts}).to_csv(cdir / "texts.csv", index=False)
-    meta_p.write_text(json.dumps({
-        "model_key": model_key, "layers": layer_ids, "synthetic": synthetic,
-        "dry_run": dry_run, "headline_only": headline_only, "n_rows": len(df),
-        "seed": config.SEED, "prompt_hash": prompt_hash,
-        "max_new_tokens": config.MAX_NEW_TOKENS,
-    }, indent=2))
-    config.log(f"cached activations: {len(df)} rows x layers {layer_ids}"
-               + (" **SYNTHETIC — smoke test only**" if synthetic else ""), key)
+    from tqdm import tqdm
+    model, tok = load_model(model_key)
+    layer_map = resolve_layers(model)
+    layer_ids = sorted(layer_map.values())
+
+    per_layer_by_id, texts_by_id = _load_resumable(cdir, layer_ids, prompt_hash)
+    done_ids = set(per_layer_by_id[layer_ids[0]])
+    todo = df[~df.id.isin(done_ids)]
+    if done_ids:
+        print(f"resuming {key}: {len(done_ids)}/{len(df)} rows already cached, "
+              f"{len(todo)} left")
+
+    def _flush(final: bool) -> None:
+        ordered = [i for i in df.id if i in per_layer_by_id[layer_ids[0]]]
+        ids = np.array(ordered, dtype=str)
+        acts_by_layer = {L: np.stack([per_layer_by_id[L][i] for i in ordered]).astype(np.float32)
+                         for L in layer_ids}
+        texts = [texts_by_id[i] for i in ordered]
+        _save_cache(cdir, layer_ids, ids, acts_by_layer, texts, {
+            "model_key": model_key, "layers": layer_ids, "synthetic": synthetic,
+            "dry_run": dry_run, "headline_only": headline_only, "n_rows": len(df),
+            "seed": config.SEED, "prompt_hash": prompt_hash,
+            "max_new_tokens": config.MAX_NEW_TOKENS,
+            "complete": len(ordered) == len(df),
+        })
+        if final:
+            config.log(f"cached activations: {len(ordered)}/{len(df)} rows x "
+                       f"layers {layer_ids}", key)
+
+    for i, r in enumerate(tqdm(todo.itertuples(), total=len(todo), desc=f"activations {key}")):
+        vecs, text = capture_residual(model, tok, r.prompt, layer_ids)
+        for L in layer_ids:
+            per_layer_by_id[L][r.id] = vecs[L]
+        texts_by_id[r.id] = text
+        if (i + 1) % config.CHECKPOINT_EVERY_N_ROWS == 0:
+            _flush(final=False)
+    _flush(final=True)
     return key
 
 
