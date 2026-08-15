@@ -108,21 +108,26 @@ def main() -> None:
 
     rows, t_gen = [], time.time()
     for r in sample.itertuples():
-        vecs, text = activations.capture_residual(model, tok, r.prompt, layers)
+        vecs, pvecs, text, margin = activations.capture_residual(
+            model, tok, r.prompt, layers)
         rows.append(dict(cell=r.cell, statement=r.statement, text=text,
                          said=behavior.parse_verdict(text),
                          think=bool(THINK_RE.search(text)),
-                         vec=vecs[layers[0]]))
+                         vec=vecs[layers[0]], pvec=pvecs[layers[0]],
+                         margin=margin, truth_value=r.truth_value))
     sec_per_row = (time.time() - t_gen) / len(rows)
 
     # --- raw output, printed in full: read it ---
     print("\n=== RAW RESPONSES (read these — do not just trust the parse rate) ===")
     for i, r in enumerate(rows, 1):
-        v = {1: "TRUE", -1: "FALSE", 0: "*** UNPARSED ***"}[r["said"]]
+        said = {1: "TRUE", -1: "FALSE", 0: "*** UNPARSED ***"}[r["said"]]
+        gt = {1: "TRUE", 0: "FALSE", -1: "n/a"}[r["truth_value"]]
+        flag = "   <<< CONTAINS <think>" if r["think"] else ""
         print(f"\n[{i}] {r['cell']}")
-        print(f"    statement: {r['statement']}")
+        print(f"    statement: {r['statement']}   [ground truth: {gt}]")
         print(f"    response : {r['text']!r}")
-        print(f"    parsed as: {v}{'   <<< CONTAINS <think>' if r['think'] else ''}")
+        print(f"    said     : {said}{flag}")
+        print(f"    belief   : logit(TRUE) - logit(FALSE) = {r['margin']:+.2f}")
 
     # --- gates ---
     print("\n=== GATES ===")
@@ -145,6 +150,24 @@ def main() -> None:
          f"shape {A.shape}, {int((~np.isfinite(A)).sum())} non-finite")
     gate(float(norms.std() / max(norms.mean(), 1e-9)) > 1e-3, "activations vary",
          f"norm mean {norms.mean():.1f} sd {norms.std():.2f}")
+
+    # The prompt-site residual must differ from the response mean, or --site prompt is
+    # silently reading the same tensor and the whole point of capturing it is lost.
+    P = np.stack([r["pvec"] for r in rows])
+    site_diff = float(np.abs(A - P).mean() / max(np.abs(A).mean(), 1e-9))
+    gate(site_diff > 1e-3, "sites differ",
+         f"mean |response - prompt| / |response| = {site_diff:.3f}")
+
+    # The belief margin is now the basis of the label and of c, so it has to be a real
+    # measurement: finite, varying, and pointing the right way on facts the model knows.
+    m = np.array([r["margin"] for r in rows])
+    fac = [r for r in rows if r["truth_value"] in (0, 1)]
+    agree = (float(np.mean([(r["margin"] > 0) == (r["truth_value"] == 1) for r in fac]))
+             if fac else float("nan"))
+    gate(bool(np.isfinite(m).all()) and float(m.std()) > 1e-6, "belief margin sane",
+         f"mean {m.mean():+.2f} sd {m.std():.2f}")
+    gate(not fac or agree >= 0.6, "belief tracks truth",
+         f"sign(margin) matches ground truth on {agree:.2f} of {len(fac)} factual rows")
 
     est = sec_per_row * len(df)
     print(f"\n  throughput      {sec_per_row:.2f} s/row -> full manifest ({len(df)} rows) "
