@@ -505,3 +505,36 @@ framing routes around all of it.
 
 Consequence for the design: phi-4's dissimulation cells carry 8 usable rows out of 274,
 so they drop out and phi-4 contributes only 8 cells / 56 pairs.
+
+### 2026-08-15 — prompt-site control: the probe is not reading its own verdict
+
+The response-mean features necessarily contain the verdict token the probe is being asked
+to predict, which is what the 0.878 text-only (TF-IDF) baseline was picking up. The
+forward pass already computes the residual at the FINAL PROMPT token — before the model
+has emitted anything — so that was cached too and probed separately.
+
+    stratum        response-site   prompt-site      (Qwen3.5-9B)
+    belief label
+      all              0.981          0.966
+      |b|<0.3          0.806          0.803
+      0.3-0.6          0.966          0.940
+      |b|>0.6          0.993          0.983
+    ground-truth label
+      all              0.977          0.951
+      |b|<0.3          0.878          0.729
+      0.3-0.6          0.964          0.917
+      |b|>0.6          0.986          0.974
+
+Two things follow.
+
+1. **The probe is not just reading the verdict token.** Moving the read to before the
+   model commits costs 0.015 AUROC on the belief label (0.981 → 0.966). Whatever the
+   probe detects is already present in the residual stream while the model is still
+   processing the prompt.
+2. **The confidence gradient survives, and on the ground-truth label it gets steeper**
+   (0.729 → 0.974 at the prompt site, vs 0.878 → 0.986 at the response site). So the
+   model's pre-commitment state encodes whether it is about to assert against its own
+   belief, and that encoding is markedly weaker on propositions it is unsure about.
+
+This is the strongest form of the row-level result: it is not a readout of the answer
+already given, it is a readout of the state before the answer exists.
