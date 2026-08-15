@@ -323,3 +323,40 @@ simulation    counterfactual_world  137         1.0       0.993     0.993       
 - 2026-08-15 05:54 [qwen3.5-9b] transfer matrix (logreg, layer 19, labels=behavior): 16 cells (5 skipped), diag AUROC 0.979, off-diag 0.974
 - 2026-08-15 05:54 [qwen3.5-9b] H1 horse race (labels=behavior): R² scenario 0.200 | c-only 0.018 | both 0.290; ΔR² 0.090 (perm p=0.136, naive F p=4.3e-06) → c does NOT add variance beyond scenario (negative result branch). Baselines: diag 0.979, within-class OOD 0.983, style 0.978, behavioral-text 0.878, length-only 0.595, random 0.554
 - 2026-08-15 05:54 [qwen3.5-9b] H2 monotonicity: Spearman ρ=0.57 (p=0.021); H3 asymmetry high→low 0.973 vs low→high 0.975
+### 2026-08-15 — red-teaming the Qwen3.5-9B run
+
+**H2 does not survive.** Reported Spearman rho=0.571, p=0.021 over 16 targets. But three
+counterfactual cells are flagged DEGENERATE (one verdict for ~all rows — a side effect of
+restricting counterfactual cells to TRUE members, which leaves every required assertion
+FALSE at 0.993 compliance). Dropping them: **rho=0.522, p=0.067, n=13** — no longer
+significant. And the whole correlation lives inside an AUROC range of 0.941–0.9996, i.e.
+rank noise on a ceiling-compressed scale, with the low-c anchors (persona, preference)
+absent from the target set entirely. Reported as NOT supported.
+
+**The row-level result survives, on three separate controls.** Stratified by the
+independent belief measure |b_hat|:
+
+    stratum      belief label            ground-truth label
+    |b|<0.3      0.806 [0.687,0.902]     0.878 [0.795,0.950]   n=80
+    0.3-0.6      0.966 [0.938,0.989]     0.964 [0.935,0.987]   n=203
+    |b|>0.6      0.993 [0.986,0.998]     0.986 [0.974,0.995]   n=588
+
+1. It holds on the **ground-truth label**, which involves neither d_truth nor the logit
+   margin, with non-overlapping CIs. So it is not an artifact of how the label was built.
+2. **Noise injection fails to explain it**: corrupting the clean >0.6 stratum at the 0.32
+   disagreement rate measured in the <0.3 stratum drives AUROC to 0.667, well *below* the
+   0.806 actually observed. Label noise over-predicts the drop.
+3. **Stratum composition is balanced**: fraction of rows from honest cells is
+   0.301/0.304/0.310 across the three strata and from dissimulation cells is identical;
+   all 28 cells appear in every stratum. The gradient is not "the low bin is a different
+   set of cells".
+
+**Caveat that must be stated.** The low-|b_hat| stratum is 89.8% hard facts vs 27.8% in
+the high stratum. "The model is uncertain" and "the fact is hard" are confounded here, so
+the claim this supports is the weaker one: deception is harder to detect on propositions
+the model is not confident about — not yet that uncertainty per se is the mediator.
+
+**Transfer is back at ceiling on the stronger model.** off-diag 0.974, in-dist 0.979,
+within-class OOD 0.983, style-shift 0.978. Qwen3.5-9B barely degrades across frames, so
+there is again little transfer variance for H1 to explain — the same problem the hard
+fact bank was built to solve on Qwen2.5, returning because the model got better.
