@@ -538,3 +538,28 @@ Two things follow.
 
 This is the strongest form of the row-level result: it is not a readout of the answer
 already given, it is a readout of the state before the answer exists.
+
+### 2026-08-18 — two stale composition numbers corrected while writing up
+
+Recomputed the confidence-stratum composition on **exactly** the rows `rowlevel.py`
+uses (`split != truthfit`, `truth_value != -1`, `parsed`, then `split == eval`), which
+reproduces its n of 80 / 203 / 588 exactly. Two figures in the 2026-08-15 red-teaming
+entry were computed on a looser filter and are wrong:
+
+    quantity                        logged 08-15   verified 08-18
+    frac hard, |b|<0.3 stratum      0.898          0.838
+    frac hard, |b|>0.6 stratum      0.278          0.274
+    distinct cells per stratum      "all 28"       27 / 28 / 28
+
+The direction and the conclusion are unchanged: the low-confidence stratum is still
+overwhelmingly hard facts, so the uncertainty/difficulty confound stands exactly as
+stated. The cell-composition control also stands (honest-cell fraction
+0.300 / 0.305 / 0.310, dissimulation-cell fraction identical). Only the low stratum is
+missing a cell, and it is missing one, not zero.
+
+`scripts/make_paper.py` now recomputes this at build time rather than quoting the log,
+so it cannot go stale again. Same for the variance decomposition, which it re-derives
+from `transfer_long.csv` and which reproduces Table 5 / `verify.py` exactly.
+
+- 2026-08-18 [all] `docs/truth_conflict_paper.docx` written by `scripts/make_paper.py`;
+  every number read from the artifacts at build time. No new runs, no new claims.

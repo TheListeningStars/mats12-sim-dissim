@@ -17,3 +17,7 @@ probes/
 # they're the evidence behind results/LOG.md's findings and cost real GPU time to
 # produce. Only ignore stray editor/OS junk here.
 results/**/.DS_Store
+
+# OS / editor junk
+.DS_Store
+~$*

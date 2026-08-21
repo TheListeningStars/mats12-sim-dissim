@@ -1,5 +1,7 @@
 # Truth-conflict axis vs. deception-probe transfer
 
+**📄 Read the write-up: [`docs/PAPER.md`](docs/PAPER.md)** (same text as [`docs/truth_conflict_paper.docx`](docs/truth_conflict_paper.docx)).
+
 MATS 12.0 application experiment. Full design in [`docs/PLAN.md`](docs/PLAN.md); working rules for the coding agent in [`CLAUDE.md`](CLAUDE.md).
 
 **Question.** Existing work carves deception by pragmatic *scenario* (lying, jailbreak, roleplay, sycophancy). We carve it by a **measured, graded truth-conflict score `c`** — how far the assertion the model *actually makes* sits from its internally-represented truth — and test whether `c` predicts probe transfer *better than* scenario labels.
